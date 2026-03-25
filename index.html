@@ -1,46 +1,954 @@
-Objectif : Développer un système de gestion de matchs à double flux (Automatique pour la référence et Manuel pour la planification) avec une synchronisation directe vers le module d'affichage Facebook.
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0d1f0d">
+    <title>Foot Apps Pro - Gestion Tournoi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --neon:#00ff88;--neon-dark:#00cc6a;--gold:#ffd700;
+            --bg:#0a0a0a;--glass:rgba(255,255,255,0.05);--gborder:rgba(255,255,255,0.1);
+        }
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
 
-1. Interface du Calendrier Automatique (La Référence)
-Génération Logique : En fonction du nombre de poules (8) et du nombre de matchs éliminatoires (ex: 3), l'app génère la liste théorique de toutes les rencontres nécessaires (Ex: Poule A - Match 1 : Équipe A1 vs Équipe A2).
+        @keyframes pulse-neon{0%,100%{box-shadow:0 0 5px var(--neon),0 0 10px var(--neon)}50%{box-shadow:0 0 20px var(--neon),0 0 40px var(--neon)}}
+        @keyframes slideIn{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes rotate{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
-Fonction "OK" (Séparation des flux) : * Chaque ligne du calendrier automatique doit comporter un bouton "OK".
+        /* ===== AUTH ===== */
+        #auth-screen{position:fixed;inset:0;background:radial-gradient(circle at 50% 100%,rgba(0,255,136,.1) 0%,transparent 50%),linear-gradient(to bottom,#0a0a0a,#0d1f0d 40%,#1a3a1a);display:flex;align-items:center;justify-content:center;z-index:9999;overflow:hidden}
+        #auth-screen::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:conic-gradient(from 0deg at 30% 30%,transparent 0deg,rgba(255,255,255,.03) 10deg,transparent 20deg),conic-gradient(from 0deg at 70% 30%,transparent 0deg,rgba(255,255,255,.03) 10deg,transparent 20deg);animation:rotate 20s linear infinite}
+        .auth-box{position:relative;z-index:10;width:90%;max-width:420px;background:var(--glass);backdrop-filter:blur(20px);border:1px solid var(--gborder);border-radius:24px;padding:40px 30px;box-shadow:0 25px 50px rgba(0,0,0,.5);animation:slideIn .6s ease}
+        .logo-sec{text-align:center;margin-bottom:40px}
+        .logo-ic{width:100px;height:100px;margin:0 auto 20px;background:linear-gradient(135deg,var(--neon),#00aa55);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 30px rgba(0,255,136,.4);animation:pulse-neon 2s infinite}
+        .logo-ic i{font-size:48px;color:#000}
+        .auth-t{font-family:'Orbitron',sans-serif;font-size:32px;color:#fff;letter-spacing:3px;text-shadow:0 0 10px rgba(0,255,136,.5)}
+        .auth-st{color:rgba(255,255,255,.6);font-size:14px;margin-top:5px}
+        .ig{margin-bottom:20px}
+        .ig label{display:block;color:var(--neon);font-size:12px;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+        .ig input{width:100%;padding:15px 20px;background:rgba(0,0,0,.3);border:1px solid rgba(0,255,136,.3);border-radius:12px;color:#fff;font-size:16px;transition:.3s}
+        .ig input:focus{outline:none;border-color:var(--neon);box-shadow:0 0 15px rgba(0,255,136,.2)}
+        .btn-neon{width:100%;padding:18px;margin-top:10px;background:linear-gradient(90deg,var(--neon),var(--neon-dark));border:none;border-radius:12px;color:#000;font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:2px;box-shadow:0 5px 20px rgba(0,255,136,.4);transition:.3s}
+        .btn-neon:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,255,136,.6)}
+        .sec-note{text-align:center;margin-top:20px;color:rgba(255,255,255,.4);font-size:11px}
 
-Rôle du bouton : Tant que l'organisateur n'a pas cliqué sur "OK", le match reste dans la liste des "Matchs à programmer".
+        /* ===== APP ===== */
+        #main-app{display:none;min-height:100vh;background:#f0f2f5;animation:slideIn .5s}
 
-Une fois cliqué, le match est marqué comme "Transféré" ou "Planifié", évitant ainsi de programmer deux fois le même match par erreur.
+        /* HEADER */
+        .hdr{background:linear-gradient(135deg,#0d1f0d,#1a3a1a);padding:15px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:1000;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+        .hdr-l{display:flex;align-items:center;gap:15px}
+        .hdr-back{background:rgba(255,255,255,.1);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:18px;transition:.2s}
+        .hdr-back:hover{background:rgba(255,255,255,.2)}
+        .hdr-title{color:#fff;font-family:'Orbitron',sans-serif;font-size:18px}
+        .usr-badge{color:var(--neon);font-size:12px;background:rgba(0,255,136,.1);padding:5px 12px;border-radius:20px;border:1px solid rgba(0,255,136,.3)}
 
-2. Mode Manuel (La Planification Réelle)
-Saisie Assistée : L'organisateur utilise la référence automatique pour remplir le calendrier réel.
+        /* DASHBOARD */
+        .dash{padding:20px;max-width:1200px;margin:0 auto}
+        .welc{text-align:center;margin-bottom:30px;color:#333}
+        .welc h2{font-size:24px}
+        .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:20px}
+        .dc{background:#fff;border-radius:20px;padding:25px 15px;text-align:center;box-shadow:0 5px 20px rgba(0,0,0,.08);cursor:pointer;transition:.3s;border:2px solid transparent}
+        .dc:hover{transform:translateY(-5px);box-shadow:0 15px 40px rgba(0,0,0,.15);border-color:var(--neon)}
+        .dc-i{width:60px;height:60px;border-radius:16px;margin:0 auto 15px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff}
 
-Champs Requis : * Sélection des deux équipes (issue de la liste générée en auto).
+        /* PAGES */
+        .pg{display:none;padding:20px;max-width:1000px;margin:0 auto;animation:slideIn .3s;padding-bottom:100px}
+        .pg.active{display:block}
+        .card{background:#fff;border-radius:20px;padding:25px;margin-bottom:20px;box-shadow:0 4px 15px rgba(0,0,0,.08)}
+        .card-t{font-size:18px;font-weight:700;margin-bottom:20px;color:#333;display:flex;align-items:center;gap:10px}
 
-Saisie de la Date du match.
+        /* FORM */
+        .fg{margin-bottom:20px}
+        .fl{display:block;font-weight:600;margin-bottom:8px;color:#555;font-size:14px}
+        .fc{width:100%;padding:12px 16px;border:2px solid #e0e0e0;border-radius:12px;font-size:15px;transition:.3s}
+        .fc:focus{outline:none;border-color:var(--neon)}
+        .fc-big{padding:18px 20px;font-size:24px;font-weight:700;text-align:center;letter-spacing:2px}
+        .rg{display:flex;gap:10px;flex-wrap:wrap}
+        .rc{flex:1;min-width:80px}
+        .rc input{display:none}
+        .rl{display:block;padding:15px;text-align:center;border:2px solid #e0e0e0;border-radius:12px;cursor:pointer;font-weight:500;transition:.2s}
+        .rc input:checked+.rl{background:var(--neon);color:#000;border-color:var(--neon)}
 
-Saisie de l'Heure (champ agrandi pour une meilleure visibilité).
+        /* TABLES */
+        .tbl-c{overflow-x:auto;background:#fff;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.05)}
+        table{width:100%;border-collapse:collapse;min-width:500px}
+        th{background:#f8f9fa;padding:12px;text-align:left;font-weight:600;color:#555;font-size:13px;white-space:nowrap;position:sticky;top:0}
+        td{padding:10px 12px;border-bottom:1px solid #f0f0f0;font-size:14px}
+        tr:hover{background:#f8f9fa}
 
-Action "Ajouter" : Le match s'enregistre et devient la source de données prioritaire pour le reste de l'application.
+        /* STATUS */
+        .st-p{background:#d4edda;color:#155724}.st-ab{background:#f8d7da;color:#721c24}
+        .st-r{background:#e74c3c;color:#fff}.st-j{background:#f1c40f;color:#000}
+        .st-in{width:100%;padding:6px;text-align:center;border:1px solid transparent;border-radius:6px;font-weight:700;font-size:12px;text-transform:uppercase}
 
-Bouton "Delete" : Chaque match planifié manuellement possède un bouton de suppression pour corriger les erreurs. Supprimer un match le remet automatiquement en statut "Non fait" dans la liste de référence.
+        /* BUTTONS */
+        .btn{padding:12px 24px;border:none;border-radius:10px;font-weight:600;cursor:pointer;transition:.3s;display:inline-flex;align-items:center;gap:8px;justify-content:center;font-size:14px}
+        .btn-p{background:var(--neon);color:#000}.btn-p:hover{transform:translateY(-2px);box-shadow:0 5px 20px rgba(0,255,136,.4)}
+        .btn-s{background:#f0f2f5;color:#333}.btn-d{background:#e74c3c;color:#fff}
+        .btn-ok{background:#27ae60;color:#fff;padding:10px 20px;font-size:14px;min-width:70px}
+        .btn-ok:hover{background:#219a52}
+        .btn-ok.done{background:#95a5a6;cursor:default}
+        .btn-del{background:#e74c3c;color:#fff;padding:10px 16px;font-size:14px;min-width:60px}
+        .btn-del:hover{background:#c0392b}
+        .btn-info{background:#3498db;color:#fff}
 
-3. Synchronisation Automatique avec l'Affichage (Facebook)
-Lien Direct : Dès qu'un match est ajouté dans le Calendrier Manuel, les données (Noms des équipes, Date, Heure) sont envoyées instantanément vers le module Affichage.
+        /* MODE TOGGLE */
+        .mtg{display:flex;background:#f0f2f5;border-radius:12px;padding:5px;margin-bottom:20px}
+        .mtg-b{flex:1;padding:14px;border:none;background:transparent;border-radius:10px;font-weight:600;cursor:pointer;transition:.3s;font-size:14px}
+        .mtg-b.active{background:#fff;color:#1a472a;box-shadow:0 2px 10px rgba(0,0,0,.1)}
 
-Mise à jour sans saisie : L'organisateur n'a plus besoin de retaper les textes. Lorsqu'il ouvre l'onglet Affichage :
+        /* CALENDAR MATCH ROW */
+        .cm-row{background:#fff;padding:16px;border-radius:14px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;border-left:4px solid #3498db;transition:.3s}
+        .cm-row.transferred{border-left-color:#27ae60;background:#f0faf4}
+        .cm-row.transferred .cm-teams{color:#888;text-decoration:line-through}
+        .cm-info{flex:1;min-width:200px}
+        .cm-teams{font-weight:700;font-size:16px;color:#333;margin-bottom:4px}
+        .cm-meta{font-size:12px;color:#666}
+        .cm-actions{display:flex;gap:8px;align-items:center}
 
-Les noms des équipes sont déjà en place.
+        /* MANUAL MATCH */
+        .mm-row{background:#fff;padding:18px;border-radius:14px;box-shadow:0 3px 12px rgba(0,0,0,.08);margin-bottom:14px;border-left:4px solid var(--neon)}
+        .mm-top{display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:10px}
+        .mm-teams{font-weight:700;font-size:18px;color:#333}
+        .mm-dt{display:flex;gap:8px;align-items:center;font-size:14px;color:#555;margin-top:8px}
+        .mm-time{font-size:28px;font-weight:900;color:#1a472a;font-family:'Orbitron',sans-serif}
 
-La date et l'heure (format large) sont déjà remplies.
+        /* SCORE INPUT */
+        .sc-in{width:60px;padding:12px;text-align:center;font-size:22px;font-weight:700;border:2px solid #e0e0e0;border-radius:10px}
+        .sc-in:focus{outline:none;border-color:var(--neon)}
+        .match-card{background:#fff;border-radius:16px;padding:20px;margin-bottom:15px;box-shadow:0 3px 12px rgba(0,0,0,.08)}
+        .match-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;padding-bottom:10px;border-bottom:2px solid #f0f0f0}
+        .match-body{display:flex;justify-content:space-between;align-items:center;gap:15px}
+        .match-tm{flex:1;text-align:center}
+        .match-tn{font-weight:700;font-size:16px;margin-bottom:8px}
+        .match-vs{font-weight:900;color:#e74c3c;font-size:18px}
 
-Il ne reste plus qu'à choisir ou importer le Background (fond d'écran) pour que l'affiche soit prête à être publiée.
+        /* GALLERY */
+        .gal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+        .gal-item{aspect-ratio:1;background:#000;border-radius:12px;overflow:hidden;position:relative}
+        .gal-item img,.gal-item video{width:100%;height:100%;object-fit:cover}
+        .gal-del{position:absolute;top:5px;right:5px;background:rgba(231,76,60,.9);color:#fff;border:none;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:12px}
 
-4. Design & Ergonomie (Mobile & Web)
-Visibilité : Sur téléphone, les boutons "OK" et "Delete" doivent être assez larges pour être cliqués facilement.
+        /* PREVIEW */
+        .prev-c{position:relative;width:100%;max-width:500px;margin:20px auto;border-radius:20px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+        .prev-bg{width:100%;min-height:500px;background-size:cover;background-position:center;position:relative;display:flex;flex-direction:column;padding:30px}
+        .prev-ov{position:absolute;inset:0;background:rgba(0,0,0,.6)}
+        .prev-ct{position:relative;z-index:10;text-align:center;color:#fff}
+        .prev-tt{font-family:'Orbitron',sans-serif;font-size:28px;color:var(--gold);text-shadow:2px 2px 4px rgba(0,0,0,.8);margin-bottom:10px}
+        .prev-ph{font-size:18px;margin-bottom:5px;text-transform:uppercase;letter-spacing:2px}
+        .prev-date{font-size:16px;opacity:.9;margin-bottom:30px}
+        .prev-m{display:flex;align-items:center;justify-content:center;gap:15px;margin:15px 0;background:rgba(255,255,255,.15);padding:15px;border-radius:12px;backdrop-filter:blur(10px)}
+        .prev-time{font-size:32px;font-weight:900;color:var(--gold);text-shadow:0 0 10px rgba(255,215,0,.5);min-width:80px;font-family:'Orbitron',sans-serif}
+        .prev-tms{font-size:18px;font-weight:700;flex:1}
+        .prev-vs{color:var(--neon);font-weight:900;font-size:20px}
 
-Navigation : Le formulaire de login doit disparaître complètement après la connexion (Code Admin : ADMIN26) pour laisser place au dashboard et aux menus de gestion.
+        /* RANKING */
+        .rk-row.qual{background:#d4edda}
 
-Ce que ce prompt va changer pour ton application :
-Gestion sans erreur : Le bouton "OK" te permet de savoir exactement où tu en es dans ta programmation (quelles équipes ont déjà leur date de match et lesquelles attendent encore).
+        /* SYNC BADGE */
+        .sync-badge{display:inline-flex;align-items:center;gap:5px;background:#e8f5e9;color:#27ae60;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;animation:blink 2s 3}
+        .synced-note{background:#d4edda;color:#1b5e20;padding:15px;border-radius:12px;margin-bottom:20px;border-left:4px solid #27ae60;font-size:14px}
 
-Gain de temps massif : Tu ne perds plus de temps à préparer tes visuels Facebook, le calendrier fait le travail à ta place.
+        /* TOAST */
+        #toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);background:#333;color:#fff;padding:15px 30px;border-radius:50px;font-weight:500;opacity:0;transition:.3s;z-index:10000;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+        #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+        #toast.success{background:var(--neon);color:#000}
+        #toast.error{background:#e74c3c}
 
-Professionnalisme : Ton application devient un véritable outil de pilotage où tout est lié, du calendrier jusqu'aux statistiques finales.
+        .hidden{display:none!important}
+        @media(max-width:600px){
+            .dash-grid{grid-template-columns:repeat(2,1fr);gap:15px}
+            .auth-t{font-size:24px}
+            .prev-time{font-size:24px}.prev-tms{font-size:14px}
+            .cm-row{padding:14px}.btn-ok,.btn-del{padding:12px 16px;font-size:13px}
+            table{font-size:12px}th,td{padding:8px 6px}
+            .mm-time{font-size:22px}
+        }
+    </style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth-screen">
+    <div class="auth-box">
+        <div class="logo-sec">
+            <div class="logo-ic"><i class="fas fa-futbol"></i></div>
+            <h1 class="auth-t">FOOT APPS</h1>
+            <p class="auth-st">Système de Gestion Professionnel</p>
+        </div>
+        <form onsubmit="event.preventDefault();Auth.login()">
+            <div class="ig">
+                <label><i class="fas fa-user"></i> Identifiant</label>
+                <input type="text" id="a-name" placeholder="Nom de l'organisateur" required>
+            </div>
+            <div class="ig">
+                <label><i class="fas fa-mobile-alt"></i> Téléphone</label>
+                <input type="tel" id="a-phone" placeholder="+243 XXX XXX XXX" required>
+            </div>
+            <div class="ig">
+                <label><i class="fas fa-shield-alt"></i> Code d'activation</label>
+                <input type="password" id="a-code" placeholder="Code fourni par l'admin" required autocomplete="off">
+            </div>
+            <button type="submit" class="btn-neon"><i class="fas fa-unlock"></i> ACCÉDER</button>
+        </form>
+        <p class="sec-note"><i class="fas fa-lock"></i> Accès sécurisé — Code fourni par l'administrateur</p>
+    </div>
+</div>
+
+<!-- MAIN -->
+<div id="main-app">
+    <header class="hdr">
+        <div class="hdr-l">
+            <button class="hdr-back hidden" id="back-btn" onclick="R.back()"><i class="fas fa-arrow-left"></i></button>
+            <span class="hdr-title" id="pg-title">DASHBOARD</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+            <span class="usr-badge" id="hdr-user">Admin</span>
+            <button class="hdr-back" onclick="Auth.logout()" title="Déconnexion"><i class="fas fa-power-off"></i></button>
+        </div>
+    </header>
+
+    <!-- DASHBOARD -->
+    <div id="pg-dashboard" class="pg active">
+        <div class="dash">
+            <div class="welc">
+                <h2>Bienvenue, <span id="welc-name">Organisateur</span></h2>
+                <p style="color:#666">Gérez votre tournoi en toute simplicité</p>
+            </div>
+            <div class="dash-grid">
+                <div class="dc" onclick="R.go('home')"><div class="dc-i" style="background:linear-gradient(135deg,#667eea,#764ba2)"><i class="fas fa-cogs"></i></div><strong>Configuration</strong></div>
+                <div class="dc" onclick="R.go('poules')"><div class="dc-i" style="background:linear-gradient(135deg,#f093fb,#f5576c)"><i class="fas fa-layer-group"></i></div><strong>Poules</strong></div>
+                <div class="dc" onclick="R.go('teams')"><div class="dc-i" style="background:linear-gradient(135deg,#4facfe,#00f2fe)"><i class="fas fa-users"></i></div><strong>Bordereaux</strong></div>
+                <div class="dc" onclick="R.go('live')"><div class="dc-i" style="background:linear-gradient(135deg,#fa709a,#fee140)"><i class="fas fa-broadcast-tower"></i></div><strong>Live Score</strong></div>
+                <div class="dc" onclick="R.go('stats')"><div class="dc-i" style="background:linear-gradient(135deg,#a8edea,#fed6e3);color:#333"><i class="fas fa-chart-line"></i></div><strong>Classements</strong></div>
+                <div class="dc" onclick="R.go('top')"><div class="dc-i" style="background:linear-gradient(135deg,#ffecd2,#fcb69f);color:#333"><i class="fas fa-trophy"></i></div><strong>Top Buteurs</strong></div>
+                <div class="dc" onclick="R.go('pilot')"><div class="dc-i" style="background:linear-gradient(135deg,#ffecd2,#30cfd0)"><i class="fas fa-wallet"></i></div><strong>Pilotage</strong></div>
+                <div class="dc" onclick="R.go('gal')"><div class="dc-i" style="background:linear-gradient(135deg,#5ee7df,#b490ca)"><i class="fas fa-camera-retro"></i></div><strong>Galerie</strong></div>
+                <div class="dc" onclick="R.go('cal')"><div class="dc-i" style="background:linear-gradient(135deg,#d299c2,#fef9d7);color:#333"><i class="fas fa-calendar-alt"></i></div><strong>Calendrier</strong></div>
+                <div class="dc" onclick="R.go('disp')"><div class="dc-i" style="background:linear-gradient(135deg,#89f7fe,#66a6ff)"><i class="fas fa-share-square"></i></div><strong>Affichage</strong></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- P1: CONFIG -->
+    <div id="pg-home" class="pg">
+        <div class="card">
+            <div class="card-t"><i class="fas fa-sliders-h" style="color:var(--neon)"></i> Configuration du Tournoi</div>
+            <div class="fg"><label class="fl">Nom du Tournoi</label><input type="text" class="fc" id="cfg-name" placeholder="Ex: Championnat Inter-Quartier 2025"></div>
+            <div class="fg"><label class="fl">Matchs éliminatoires par équipe</label>
+                <div class="rg">
+                    <label class="rc"><input type="radio" name="elim" value="1"><span class="rl">1 Match</span></label>
+                    <label class="rc"><input type="radio" name="elim" value="2"><span class="rl">2 Matchs</span></label>
+                    <label class="rc"><input type="radio" name="elim" value="3" checked><span class="rl">3 Matchs</span></label>
+                </div>
+            </div>
+            <div class="fg"><label class="fl">Seizièmes de finale ?</label>
+                <div class="rg">
+                    <label class="rc"><input type="radio" name="has16" value="yes"><span class="rl">Oui</span></label>
+                    <label class="rc"><input type="radio" name="has16" value="no" checked><span class="rl">Non</span></label>
+                </div>
+            </div>
+            <button class="btn btn-p" onclick="Home.save()" style="width:100%"><i class="fas fa-save"></i> Sauvegarder Configuration</button>
+        </div>
+    </div>
+
+    <!-- P2: POULES -->
+    <div id="pg-poules" class="pg">
+        <div class="card">
+            <div class="card-t"><i class="fas fa-object-group" style="color:#f5576c"></i> Structure des Poules</div>
+            <div class="fg">
+                <select class="fc" id="poule-fmt" onchange="Poules.render(this.value)">
+                    <option value="">-- Choisir le format --</option>
+                    <option value="2">2 Poules (8 équipes/poule)</option>
+                    <option value="4">4 Poules (4 équipes/poule)</option>
+                    <option value="8">8 Poules (4 équipes/poule)</option>
+                </select>
+            </div>
+            <div id="poules-ct"></div>
+        </div>
+    </div>
+
+    <!-- P3: TEAMS -->
+    <div id="pg-teams" class="pg">
+        <div class="card">
+            <div class="card-t"><i class="fas fa-clipboard-list" style="color:#4facfe"></i> Bordereaux des Équipes</div>
+            <select class="fc" id="team-sel" onchange="Teams.load(this.value)" style="margin-bottom:20px"><option value="">-- Sélectionner --</option></select>
+            <div id="bord-ct"></div>
+        </div>
+    </div>
+
+    <!-- P4: LIVE -->
+    <div id="pg-live" class="pg">
+        <div class="card">
+            <div class="card-t"><i class="fas fa-satellite-dish" style="color:#fa709a"></i> Live Score & Résultats</div>
+            <div id="live-ct"></div>
+        </div>
+    </div>
+
+    <!-- P5: STATS -->
+    <div id="pg-stats" class="pg">
+        <div class="card">
+            <div class="card-t"><i class="fas fa-poll" style="color:#667eea"></i> Classements</div>
+            <div id="stats-ct"></div>
+        </div>
+    </div>
+
+    <!-- P6: TOP -->
+    <div id="pg-top" class="pg">
+        <div class="card">
+            <div class="card-t"><i class="fas fa-star" style="color:#ffd700"></i> Top Buteurs & Passeurs</div>
+            <div style="background:#f8f9fa;padding:20px;border-radius:12px;margin-bottom:20px">
+                <h4 style="margin-bottom:15px">Ajouter une action</h4>
+                <select class="fc" id="sc-team" onchange="Top.loadP(this.value)" style="margin-bottom:10px"><option>-- Équipe --</option></select>
+                <select class="fc" id="sc-player" style="margin-bottom:10px"><option>-- Joueur --</option></select>
+                <div style="display:flex;gap:10px">
+                    <button class="btn" style="flex:1;background:#27ae60;color:#fff" onclick="Top.add('goal')"><i class="fas fa-futbol"></i> But</button>
+                    <button class="btn" style="flex:1;background:#3498db;color:#fff" onclick="Top.add('assist')"><i class="fas fa-hands-helping"></i> Passe</button>
+                </div>
+            </div>
+            <div id="top-ct"></div>
+        </div>
+    </div>
+
+    <!-- P7: PILOTAGE -->
+    <div id="pg-pilot" class="pg">
+        <div class="card">
+            <div class="card-t"><i class="fas fa-coins" style="color:#30cfd0"></i> Gestion Financière</div>
+            <div id="pay-ct"></div>
+        </div>
+    </div>
+
+    <!-- P8: GALERIE -->
+    <div id="pg-gal" class="pg">
+        <div class="card">
+            <div class="card-t"><i class="fas fa-images" style="color:#b490ca"></i> Galerie</div>
+            <input type="file" id="gal-in" accept="image/*,video/mp4,video/mov" multiple style="display:none" onchange="Gal.upload(this)">
+            <button class="btn btn-p" onclick="document.getElementById('gal-in').click()" style="width:100%;padding:15px;margin-bottom:20px"><i class="fas fa-cloud-upload-alt"></i> Ajouter Photos/Vidéos</button>
+            <div id="gal-grid" class="gal-grid"></div>
+        </div>
+    </div>
+
+    <!-- P9: CALENDRIER -->
+    <div id="pg-cal" class="pg">
+        <div class="card">
+            <div class="card-t"><i class="fas fa-calendar-week" style="color:#d299c2"></i> Calendrier des Matchs</div>
+            <div class="mtg">
+                <button class="mtg-b active" id="m-auto" onclick="Cal.mode('auto')"><i class="fas fa-magic"></i> Référence Auto</button>
+                <button class="mtg-b" id="m-manual" onclick="Cal.mode('manual')"><i class="fas fa-edit"></i> Planification</button>
+            </div>
+
+            <!-- AUTO -->
+            <div id="cal-auto">
+                <div style="background:#fff3cd;padding:15px;border-radius:12px;border-left:4px solid #ffc107;margin-bottom:20px;font-size:14px">
+                    <i class="fas fa-info-circle"></i> <strong>Mode Référence:</strong> Liste de toutes les rencontres à programmer. Cliquez <strong>OK</strong> pour marquer un match comme planifié.
+                </div>
+                <button class="btn btn-p" onclick="Cal.genAuto()" style="width:100%;margin-bottom:20px"><i class="fas fa-sync-alt"></i> Générer la Référence Automatique</button>
+                <div id="cal-auto-list"></div>
+            </div>
+
+            <!-- MANUAL -->
+            <div id="cal-manual" class="hidden">
+                <div style="background:#d1ecf1;padding:15px;border-radius:12px;border-left:4px solid #17a2b8;margin-bottom:20px;font-size:14px">
+                    <i class="fas fa-info-circle"></i> <strong>Planification:</strong> Sélectionnez les équipes, la date et l'heure. Les matchs planifiés ici sont synchronisés automatiquement vers l'Affichage Facebook.
+                </div>
+                <div class="card" style="background:#f8f9fa">
+                    <h4 style="margin-bottom:15px"><i class="fas fa-plus-circle" style="color:var(--neon)"></i> Programmer un Match</h4>
+                    <div class="fg">
+                        <label class="fl">Équipe Domicile</label>
+                        <select class="fc" id="man-t1"><option value="">-- Choisir --</option></select>
+                    </div>
+                    <div class="fg">
+                        <label class="fl">Équipe Extérieur</label>
+                        <select class="fc" id="man-t2"><option value="">-- Choisir --</option></select>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px">
+                        <div class="fg">
+                            <label class="fl"><i class="fas fa-calendar-day"></i> Date</label>
+                            <input type="date" class="fc" id="man-date">
+                        </div>
+                        <div class="fg">
+                            <label class="fl"><i class="fas fa-clock"></i> Heure</label>
+                            <input type="time" class="fc fc-big" id="man-time">
+                        </div>
+                    </div>
+                    <button class="btn btn-p" onclick="Cal.addManual()" style="width:100%"><i class="fas fa-calendar-plus"></i> Ajouter au Calendrier</button>
+                </div>
+                <h4 style="margin:25px 0 15px"><i class="fas fa-list-alt"></i> Matchs Planifiés</h4>
+                <div id="cal-man-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- P10: AFFICHAGE -->
+    <div id="pg-disp" class="pg">
+        <div class="card">
+            <div class="card-t"><i class="fas fa-bullhorn" style="color:#66a6ff"></i> Affichage Facebook</div>
+            <div id="disp-sync-note"></div>
+            <div class="fg"><label class="fl">Titre (Terrain/Stade)</label><input type="text" class="fc" id="disp-title" placeholder="Ex: Stade Municipal"></div>
+            <div class="fg"><label class="fl">Type de Phase</label>
+                <select class="fc" id="disp-phase">
+                    <option>Éliminatoire</option><option>Seizième de Finale</option><option>Huitième de Finale</option>
+                    <option>Quart de Finale</option><option>Demi-Finale</option><option>Finale</option>
+                </select>
+            </div>
+            <div class="fg"><label class="fl">Arrière-plan</label>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+                    <button onclick="Disp.bg='linear-gradient(135deg,#1a472a,#0d2614)'" style="width:45px;height:45px;border-radius:50%;background:linear-gradient(135deg,#1a472a,#0d2614);border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.2);cursor:pointer"></button>
+                    <button onclick="Disp.bg='linear-gradient(135deg,#8e44ad,#3498db)'" style="width:45px;height:45px;border-radius:50%;background:linear-gradient(135deg,#8e44ad,#3498db);border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.2);cursor:pointer"></button>
+                    <button onclick="Disp.bg='linear-gradient(135deg,#e74c3c,#f39c12)'" style="width:45px;height:45px;border-radius:50%;background:linear-gradient(135deg,#e74c3c,#f39c12);border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.2);cursor:pointer"></button>
+                    <button onclick="Disp.bg='linear-gradient(135deg,#2c3e50,#34495e)'" style="width:45px;height:45px;border-radius:50%;background:linear-gradient(135deg,#2c3e50,#34495e);border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.2);cursor:pointer"></button>
+                    <button onclick="Disp.bg='linear-gradient(135deg,#0d47a1,#1565c0)'" style="width:45px;height:45px;border-radius:50%;background:linear-gradient(135deg,#0d47a1,#1565c0);border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.2);cursor:pointer"></button>
+                    <label style="cursor:pointer;display:flex;align-items:center;justify-content:center;width:45px;height:45px;border-radius:50%;background:#f0f0f0;border:2px dashed #999"><i class="fas fa-plus"></i><input type="file" accept="image/*" style="display:none" onchange="Disp.uploadBg(this)"></label>
+                </div>
+            </div>
+            <h4 style="margin:20px 0 10px"><i class="fas fa-futbol"></i> Matchs à afficher</h4>
+            <div id="disp-matches"></div>
+            <button class="btn btn-p" onclick="Disp.generate()" style="width:100%;margin-top:20px"><i class="fas fa-image"></i> Générer l'Affiche</button>
+            <div id="prev-sec" class="hidden" style="margin-top:30px">
+                <h4 style="margin-bottom:15px">👁️ Aperçu — Capturez l'écran pour partager</h4>
+                <div class="prev-c" id="final-prev"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toast">OK</div>
+
+<script>
+// ====== CONFIG ======
+const ADMIN_CODE='ADMIN26';
+
+// ====== DB ======
+const K={auth:'fa2_auth',cfg:'fa2_cfg',poules:'fa2_poul',players:'fa2_play',scores:'fa2_scores',goals:'fa2_goals',assists:'fa2_assists',pays:'fa2_pays',gal:'fa2_gal',autoRef:'fa2_autoRef',manual:'fa2_manual'};
+const D={
+    g(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},
+    s(k,v){localStorage.setItem(k,JSON.stringify(v))}
+};
+
+// ====== TOAST ======
+function toast(m,t='success'){const e=document.getElementById('toast');e.textContent=m;e.className=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),3000)}
+
+// ====== AUTH ======
+const Auth={
+    check(){
+        const a=D.g(K.auth);
+        if(a&&a.valid){
+            document.getElementById('auth-screen').style.display='none';
+            document.getElementById('main-app').style.display='block';
+            document.getElementById('welc-name').textContent=a.name;
+            document.getElementById('hdr-user').textContent=a.name;
+        }
+    },
+    login(){
+        const n=document.getElementById('a-name').value.trim();
+        const p=document.getElementById('a-phone').value.trim();
+        const c=document.getElementById('a-code').value.trim();
+        if(!n||!p||!c){toast('Remplissez tous les champs','error');return}
+        if(c!==ADMIN_CODE){toast('Code d\'activation invalide !','error');return}
+        D.s(K.auth,{name:n,phone:p,valid:true});
+        toast('Bienvenue '+n+' !');
+        this.check();
+    },
+    logout(){if(confirm('Déconnexion ?')){D.s(K.auth,null);location.reload()}}
+};
+
+// ====== ROUTER ======
+const R={
+    go(p){
+        document.querySelectorAll('.pg').forEach(e=>e.classList.remove('active'));
+        document.getElementById('pg-'+p).classList.add('active');
+        document.getElementById('back-btn').classList.toggle('hidden',p==='dashboard');
+        const titles={home:'CONFIGURATION',poules:'POULES',teams:'BORDEREAUX',live:'LIVE SCORE',stats:'CLASSEMENTS',top:'TOP BUTEURS',pilot:'PILOTAGE',gal:'GALERIE',cal:'CALENDRIER',disp:'AFFICHAGE'};
+        document.getElementById('pg-title').textContent=titles[p]||'DASHBOARD';
+        if(p==='home')Home.load();
+        if(p==='poules')Poules.load();
+        if(p==='teams')Teams.init();
+        if(p==='live')Live.init();
+        if(p==='stats')Stats.init();
+        if(p==='top')Top.init();
+        if(p==='pilot')Pilot.init();
+        if(p==='gal')Gal.render();
+        if(p==='cal')Cal.init();
+        if(p==='disp')Disp.init();
+    },
+    back(){this.go('dashboard')}
+};
+
+// ====== HELPERS ======
+function getAllTeams(){
+    const p=D.g(K.poules)||{};
+    const teams=[];
+    Object.entries(p).forEach(([k,v])=>{if(k!=='format'&&Array.isArray(v))v.forEach(t=>{if(t&&t.name)teams.push({...t,poule:k})})});
+    return teams;
+}
+
+// ====== HOME ======
+const Home={
+    load(){
+        const c=D.g(K.cfg)||{elim:3,has16:false};
+        document.getElementById('cfg-name').value=c.name||'';
+        const r=document.querySelector(`input[name="elim"][value="${c.elim}"]`);if(r)r.checked=true;
+        const h=document.querySelector(`input[name="has16"][value="${c.has16?'yes':'no'}"]`);if(h)h.checked=true;
+    },
+    save(){
+        const c={name:document.getElementById('cfg-name').value,elim:parseInt(document.querySelector('input[name="elim"]:checked').value),has16:document.querySelector('input[name="has16"]:checked').value==='yes'};
+        D.s(K.cfg,c);toast('Configuration sauvegardée !');
+    }
+};
+
+// ====== POULES ======
+const Poules={
+    load(){
+        const s=D.g(K.poules);
+        if(s&&s.format){document.getElementById('poule-fmt').value=s.format;this.render(s.format)}
+    },
+    render(f){
+        if(!f){document.getElementById('poules-ct').innerHTML='';return}
+        const n=parseInt(f),tpp=n===2?8:4,saved=D.g(K.poules)||{};
+        let h='';
+        for(let i=0;i<n;i++){
+            const L=String.fromCharCode(65+i),teams=saved[L]||[];
+            h+=`<div style="margin-bottom:20px"><div style="background:#f5576c;color:#fff;padding:10px;border-radius:8px 8px 0 0;font-weight:700">POULE ${L}</div><div style="border:1px solid #eee;padding:15px;border-radius:0 0 8px 8px">`;
+            for(let j=0;j<tpp;j++){
+                const t=teams[j]||{name:'',loc:''};
+                h+=`<div style="display:flex;gap:10px;margin-bottom:10px"><input type="text" class="fc tn" data-p="${L}" data-i="${j}" placeholder="${j+1}. Nom équipe" value="${t.name}" style="flex:1"><input type="text" class="fc tl" data-p="${L}" data-i="${j}" placeholder="Lieu" value="${t.loc}" style="width:120px"></div>`;
+            }
+            h+=`</div></div>`;
+        }
+        h+=`<button class="btn btn-p" onclick="Poules.save(${n})" style="width:100%"><i class="fas fa-save"></i> Sauvegarder</button>`;
+        document.getElementById('poules-ct').innerHTML=h;
+    },
+    save(n){
+        const d={format:n};
+        for(let i=0;i<n;i++){
+            const L=String.fromCharCode(65+i);d[L]=[];
+            document.querySelectorAll(`.tn[data-p="${L}"]`).forEach((inp,idx)=>{
+                const loc=document.querySelector(`.tl[data-p="${L}"][data-i="${idx}"]`).value;
+                if(inp.value.trim())d[L].push({name:inp.value.trim(),loc:loc.trim(),id:L+(idx+1)});
+            });
+        }
+        D.s(K.poules,d);toast('Poules enregistrées !');
+    }
+};
+
+// ====== TEAMS ======
+const Teams={
+    init(){
+        const sel=document.getElementById('team-sel');
+        sel.innerHTML='<option value="">-- Sélectionner une équipe --</option>';
+        const teams=getAllTeams();
+        if(!teams.length){document.getElementById('bord-ct').innerHTML='<p style="text-align:center;padding:40px;color:#999"><i class="fas fa-exclamation-circle" style="font-size:48px;display:block;margin-bottom:15px"></i>Configurez d\'abord les Poules</p>';return}
+        teams.forEach((t,i)=>sel.innerHTML+=`<option value="${t.poule}|${i}">${t.name} (Poule ${t.poule})</option>`);
+    },
+    load(val){
+        if(!val){document.getElementById('bord-ct').innerHTML='';return}
+        const[p,idx]=val.split('|');
+        const poules=D.g(K.poules)||{};
+        const pTeams=getAllTeams().filter(t=>t.poule===p);
+        const team=pTeams[parseInt(idx)];
+        if(!team){toast('Équipe non trouvée','error');return}
+        const cfg=D.g(K.cfg)||{elim:3,has16:false};
+        const saved=(D.g(K.players)||{})[val]||[];
+        let cols=['N°','Nom & Prénom','Maillot'];
+        for(let i=1;i<=cfg.elim;i++)cols.push('Élim'+i);
+        if(cfg.has16)cols.push('1/16');
+        cols.push('1/8','1/4','1/2','Finale');
+        const matchCols=cols.length-3;
+
+        let h=`<div style="background:#4facfe;color:#fff;padding:15px;border-radius:12px;margin-bottom:15px"><h3 style="margin:0">${team.name}</h3><p style="margin:5px 0 0;opacity:.9;font-size:13px">📍 ${team.loc} | Poule ${team.poule}</p></div>`;
+        h+=`<div class="tbl-c"><table><thead><tr>${cols.map(c=>'<th>'+c+'</th>').join('')}</tr></thead><tbody>`;
+        for(let i=0;i<17;i++){
+            if(i===11)h+=`<tr style="background:#fff3cd;font-weight:bold"><td colspan="${cols.length}" style="text-align:center;padding:12px"><i class="fas fa-exchange-alt"></i> REMPLAÇANTS</td></tr>`;
+            const pl=saved[i]||{name:'',num:'',status:[]};
+            h+=`<tr><td style="font-weight:700;background:#f8f9fa">${i+1}</td><td><input type="text" class="fc" value="${pl.name}" id="pl-${i}-n" style="min-width:140px;font-size:13px;padding:8px"></td><td><input type="text" class="fc" value="${pl.num}" id="pl-${i}-u" style="width:60px;text-align:center;padding:8px"></td>`;
+            for(let m=0;m<matchCols;m++){
+                const st=pl.status&&pl.status[m]?pl.status[m].toUpperCase():'';
+                let cls='';if(st==='P')cls='st-p';else if(st==='AB')cls='st-ab';else if(st==='R')cls='st-r';else if(st==='J')cls='st-j';
+                h+=`<td><input type="text" class="st-in ${cls}" value="${st}" id="pl-${i}-m${m}" onchange="Teams.color(this)" oninput="this.value=this.value.toUpperCase()" style="width:50px" maxlength="2"></td>`;
+            }
+            h+=`</tr>`;
+        }
+        h+=`</tbody></table></div>`;
+        h+=`<div style="margin-top:20px;padding:15px;background:#f8f9fa;border-radius:12px"><p style="font-size:13px;margin-bottom:10px"><strong>Codes:</strong></p><div style="display:flex;gap:10px;flex-wrap:wrap;font-size:12px"><span class="st-in st-p" style="width:auto;padding:6px 12px">P = Présent</span><span class="st-in st-ab" style="width:auto;padding:6px 12px">AB = Absent</span><span class="st-in st-j" style="width:auto;padding:6px 12px">J = Jaune</span><span class="st-in st-r" style="width:auto;padding:6px 12px">R = Rouge</span></div></div>`;
+        h+=`<button class="btn btn-p" onclick="Teams.save('${val}',${matchCols})" style="width:100%;margin-top:15px"><i class="fas fa-save"></i> Sauvegarder Bordereau</button>`;
+        document.getElementById('bord-ct').innerHTML=h;
+    },
+    color(el){const v=el.value.toUpperCase();el.className='st-in';if(v==='P')el.classList.add('st-p');else if(v==='AB')el.classList.add('st-ab');else if(v==='R')el.classList.add('st-r');else if(v==='J')el.classList.add('st-j')},
+    save(key,mc){
+        const data=[];
+        for(let i=0;i<17;i++){
+            const st=[];for(let m=0;m<mc;m++){const el=document.getElementById(`pl-${i}-m${m}`);st.push(el?el.value:'')}
+            data.push({name:document.getElementById(`pl-${i}-n`).value,num:document.getElementById(`pl-${i}-u`).value,status:st});
+        }
+        const all=D.g(K.players)||{};all[key]=data;D.s(K.players,all);toast('Bordereau sauvegardé !');
+    }
+};
+
+// ====== CALENDAR (DOUBLE FLUX) ======
+const Cal={
+    curMode:'auto',
+    init(){
+        this.curMode='auto';this.updateUI();this.renderAuto();this.renderManual();this.fillTeamSelects();
+    },
+    mode(m){this.curMode=m;this.updateUI()},
+    updateUI(){
+        document.getElementById('m-auto').classList.toggle('active',this.curMode==='auto');
+        document.getElementById('m-manual').classList.toggle('active',this.curMode==='manual');
+        document.getElementById('cal-auto').classList.toggle('hidden',this.curMode!=='auto');
+        document.getElementById('cal-manual').classList.toggle('hidden',this.curMode!=='manual');
+    },
+    fillTeamSelects(){
+        const teams=getAllTeams();
+        ['man-t1','man-t2'].forEach(id=>{
+            const sel=document.getElementById(id);
+            sel.innerHTML='<option value="">-- Choisir --</option>';
+            teams.forEach(t=>sel.innerHTML+=`<option value="${t.name}">${t.name} (${t.poule})</option>`);
+        });
+    },
+    genAuto(){
+        const poules=D.g(K.poules);const cfg=D.g(K.cfg);
+        if(!poules||!cfg){toast('Configurez d\'abord les poules !','error');return}
+        const matches=[];let id=0;
+        Object.entries(poules).forEach(([pn,teams])=>{
+            if(pn==='format'||!Array.isArray(teams))return;
+            const valid=teams.filter(t=>t&&t.name);
+            if(valid.length<2)return;
+            for(let e=0;e<cfg.elim;e++){
+                for(let i=0;i<valid.length;i++){
+                    for(let j=i+1;j<valid.length;j++){
+                        // Only add once per unique pair per elim round
+                        const matchId=`${pn}_E${e+1}_${valid[i].name}_${valid[j].name}`;
+                        if(!matches.find(m=>m.id===matchId)){
+                            matches.push({
+                                id:matchId,
+                                t1:valid[i].name,
+                                t2:valid[j].name,
+                                poule:pn,
+                                round:e+1,
+                                phase:`Élim. ${e+1}`,
+                                ok:false
+                            });
+                        }
+                    }
+                }
+            }
+        });
+        D.s(K.autoRef,matches);
+        toast(`${matches.length} rencontres générées !`);
+        this.renderAuto();
+    },
+    renderAuto(){
+        const matches=D.g(K.autoRef)||[];
+        const div=document.getElementById('cal-auto-list');
+        if(!matches.length){div.innerHTML='<p style="text-align:center;padding:40px;color:#999"><i class="fas fa-calendar-plus" style="font-size:48px;display:block;margin-bottom:15px"></i>Cliquez sur "Générer" pour créer la référence</p>';return}
+        const pending=matches.filter(m=>!m.ok);
+        const done=matches.filter(m=>m.ok);
+        let h=`<div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap"><span style="background:#fff3cd;padding:8px 16px;border-radius:8px;font-weight:600;font-size:13px">⏳ À programmer: ${pending.length}</span><span style="background:#d4edda;padding:8px 16px;border-radius:8px;font-weight:600;font-size:13px">✅ Planifiés: ${done.length}</span><span style="background:#e3f2fd;padding:8px 16px;border-radius:8px;font-weight:600;font-size:13px">📊 Total: ${matches.length}</span></div>`;
+        if(pending.length){
+            h+='<h4 style="margin-bottom:12px;color:#e67e22"><i class="fas fa-clock"></i> Matchs à programmer</h4>';
+            pending.forEach((m,i)=>{
+                const realIdx=matches.indexOf(m);
+                h+=`<div class="cm-row"><div class="cm-info"><div class="cm-teams">${m.t1} <span style="color:#e74c3c;margin:0 8px">VS</span> ${m.t2}</div><div class="cm-meta"><span style="background:#e3f2fd;padding:3px 8px;border-radius:6px;margin-right:8px">Poule ${m.poule}</span>${m.phase}</div></div><div class="cm-actions"><button class="btn btn-ok" onclick="Cal.markOk(${realIdx})"><i class="fas fa-check"></i> OK</button></div></div>`;
+            });
+        }
+        if(done.length){
+            h+='<h4 style="margin:25px 0 12px;color:#27ae60"><i class="fas fa-check-circle"></i> Déjà planifiés</h4>';
+            done.forEach(m=>{
+                h+=`<div class="cm-row transferred"><div class="cm-info"><div class="cm-teams">${m.t1} VS ${m.t2}</div><div class="cm-meta"><span style="background:#d4edda;padding:3px 8px;border-radius:6px;margin-right:8px">Poule ${m.poule}</span>${m.phase} <span class="sync-badge"><i class="fas fa-check"></i> Transféré</span></div></div></div>`;
+            });
+        }
+        div.innerHTML=h;
+    },
+    markOk(idx){
+        const m=D.g(K.autoRef);
+        m[idx].ok=true;
+        D.s(K.autoRef,m);
+        toast('Match marqué comme planifié ✅');
+        this.renderAuto();
+    },
+    addManual(){
+        const t1=document.getElementById('man-t1').value;
+        const t2=document.getElementById('man-t2').value;
+        const date=document.getElementById('man-date').value;
+        const time=document.getElementById('man-time').value;
+        if(!t1||!t2){toast('Sélectionnez les deux équipes !','error');return}
+        if(t1===t2){toast('Choisissez deux équipes différentes !','error');return}
+        if(!date){toast('Indiquez la date !','error');return}
+        if(!time){toast('Indiquez l\'heure !','error');return}
+        const manual=D.g(K.manual)||[];
+        manual.push({t1,t2,date,time,id:Date.now()});
+        D.s(K.manual,manual);
+        // Mark corresponding auto-ref as OK
+        const autoRef=D.g(K.autoRef)||[];
+        const found=autoRef.find(m=>((m.t1===t1&&m.t2===t2)||(m.t1===t2&&m.t2===t1))&&!m.ok);
+        if(found){found.ok=true;D.s(K.autoRef,autoRef)}
+        document.getElementById('man-t1').value='';
+        document.getElementById('man-t2').value='';
+        document.getElementById('man-date').value='';
+        document.getElementById('man-time').value='';
+        toast('Match planifié et synchronisé ! 📅');
+        this.renderManual();this.renderAuto();
+    },
+    renderManual(){
+        const manual=D.g(K.manual)||[];
+        const div=document.getElementById('cal-man-list');
+        if(!manual.length){div.innerHTML='<p style="text-align:center;padding:30px;color:#999">Aucun match planifié</p>';return}
+        let h='';
+        manual.forEach((m,i)=>{
+            const dateStr=new Date(m.date).toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});
+            h+=`<div class="mm-row"><div class="mm-top"><div><div class="mm-teams">${m.t1} <span style="color:#e74c3c">VS</span> ${m.t2}</div><div class="mm-dt"><i class="fas fa-calendar-day"></i> ${dateStr}</div></div><div style="display:flex;align-items:center;gap:12px"><div class="mm-time">${m.time}</div><button class="btn btn-del" onclick="Cal.delManual(${i})"><i class="fas fa-trash"></i></button></div></div></div>`;
+        });
+        div.innerHTML=h;
+    },
+    delManual(idx){
+        if(!confirm('Supprimer ce match ?'))return;
+        const manual=D.g(K.manual)||[];
+        const removed=manual[idx];
+        manual.splice(idx,1);
+        D.s(K.manual,manual);
+        // Reset auto ref status
+        const autoRef=D.g(K.autoRef)||[];
+        const found=autoRef.find(m=>((m.t1===removed.t1&&m.t2===removed.t2)||(m.t1===removed.t2&&m.t2===removed.t1))&&m.ok);
+        if(found){found.ok=false;D.s(K.autoRef,autoRef)}
+        toast('Match supprimé — remis en "à programmer"');
+        this.renderManual();this.renderAuto();
+    }
+};
+
+// ====== LIVE SCORE ======
+const Live={
+    init(){
+        const manual=D.g(K.manual)||[];
+        const scores=D.g(K.scores)||{};
+        const div=document.getElementById('live-ct');
+        if(!manual.length){div.innerHTML='<p style="text-align:center;padding:40px;color:#999"><i class="fas fa-calendar-times" style="font-size:48px;display:block;margin-bottom:15px"></i>Planifiez des matchs dans le Calendrier pour les voir ici</p>';return}
+        let h='';
+        manual.forEach((m,i)=>{
+            const sc=scores[m.id]||{s1:'',s2:''};
+            const dateStr=new Date(m.date).toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+            h+=`<div class="match-card"><div class="match-hdr"><div><span style="background:#667eea;color:#fff;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600">Éliminatoire</span></div><div style="color:#666;font-size:13px"><i class="fas fa-clock"></i> ${m.time} — ${dateStr}</div></div><div class="match-body"><div class="match-tm"><div class="match-tn">${m.t1}</div><input type="number" class="sc-in" min="0" value="${sc.s1}" onchange="Live.save('${m.id}','s1',this.value)"></div><div class="match-vs">VS</div><div class="match-tm"><div class="match-tn">${m.t2}</div><input type="number" class="sc-in" min="0" value="${sc.s2}" onchange="Live.save('${m.id}','s2',this.value)"></div></div></div>`;
+        });
+        div.innerHTML=h;
+    },
+    save(id,side,val){
+        const sc=D.g(K.scores)||{};
+        if(!sc[id])sc[id]={s1:'',s2:''};
+        sc[id][side]=val;
+        D.s(K.scores,sc);
+        toast('Score enregistré !');
+    }
+};
+
+// ====== STATS ======
+const Stats={
+    init(){
+        const poules=D.g(K.poules)||{};
+        const manual=D.g(K.manual)||[];
+        const scores=D.g(K.scores)||{};
+        const div=document.getElementById('stats-ct');
+        const standings={};
+        // Init
+        Object.entries(poules).forEach(([p,teams])=>{
+            if(p==='format'||!Array.isArray(teams))return;
+            standings[p]=[];
+            teams.forEach(t=>{if(t&&t.name)standings[p].push({name:t.name,loc:t.loc,p:0,w:0,d:0,l:0,gf:0,ga:0,gd:0,pts:0,yc:0,rc:0})});
+        });
+        // Calc from manual matches
+        manual.forEach(m=>{
+            const sc=scores[m.id];
+            if(!sc||sc.s1===''||sc.s2==='')return;
+            const s1=parseInt(sc.s1)||0,s2=parseInt(sc.s2)||0;
+            // Find teams in standings
+            Object.values(standings).forEach(pg=>{
+                const tm1=pg.find(t=>t.name===m.t1);
+                const tm2=pg.find(t=>t.name===m.t2);
+                if(tm1){tm1.p++;tm1.gf+=s1;tm1.ga+=s2;tm1.gd=tm1.gf-tm1.ga;if(s1>s2){tm1.w++;tm1.pts+=3}else if(s1===s2){tm1.d++;tm1.pts+=1}else{tm1.l++}}
+                if(tm2){tm2.p++;tm2.gf+=s2;tm2.ga+=s1;tm2.gd=tm2.gf-tm2.ga;if(s2>s1){tm2.w++;tm2.pts+=3}else if(s2===s1){tm2.d++;tm2.pts+=1}else{tm2.l++}}
+            });
+        });
+        // Count cards from bordereaux
+        const players=D.g(K.players)||{};
+        Object.values(players).forEach(team=>{
+            team.forEach(pl=>{
+                if(pl.status)pl.status.forEach(st=>{
+                    // Find team in standings
+                    Object.values(standings).forEach(pg=>{
+                        // We don't have team name here, simplified
+                    });
+                });
+            });
+        });
+        // Sort
+        Object.keys(standings).forEach(p=>standings[p].sort((a,b)=>b.pts!==a.pts?b.pts-a.pts:b.gd!==a.gd?b.gd-a.gd:b.gf-a.gf));
+        if(!Object.keys(standings).length){div.innerHTML='<p style="text-align:center;padding:40px;color:#999">Aucune statistique</p>';return}
+        let h='';
+        Object.entries(standings).forEach(([p,teams])=>{
+            h+=`<div style="margin-bottom:30px"><h3 style="background:#667eea;color:#fff;padding:12px;border-radius:12px 12px 0 0;margin-bottom:0"><i class="fas fa-trophy"></i> Poule ${p}</h3><div class="tbl-c" style="border-radius:0 0 12px 12px"><table><thead><tr><th>Pos</th><th>Équipe</th><th>J</th><th>G</th><th>N</th><th>P</th><th>BP</th><th>BC</th><th>Diff</th><th>Pts</th></tr></thead><tbody>`;
+            teams.forEach((t,i)=>{
+                h+=`<tr${i<2?' class="rk-row qual"':''}><td style="font-weight:700">${i+1}</td><td><strong>${t.name}</strong><br><small style="color:#666">${t.loc}</small></td><td>${t.p}</td><td>${t.w}</td><td>${t.d}</td><td>${t.l}</td><td>${t.gf}</td><td>${t.ga}</td><td style="font-weight:700;color:${t.gd>0?'#27ae60':t.gd<0?'#e74c3c':'#666'}">${t.gd>0?'+':''}${t.gd}</td><td><strong style="font-size:16px;color:#667eea">${t.pts}</strong></td></tr>`;
+            });
+            h+=`</tbody></table></div></div>`;
+        });
+        div.innerHTML=h;
+    }
+};
+
+// ====== TOP SCORERS ======
+const Top={
+    init(){
+        const sel=document.getElementById('sc-team');
+        sel.innerHTML='<option>-- Équipe --</option>';
+        getAllTeams().forEach(t=>sel.innerHTML+=`<option>${t.name}</option>`);
+        this.render();
+    },
+    loadP(team){
+        const sel=document.getElementById('sc-player');
+        sel.innerHTML='<option>-- Joueur --</option>';
+        const players=D.g(K.players)||{};
+        Object.entries(players).forEach(([key,data])=>{
+            const poules=D.g(K.poules)||{};
+            // Check if this key matches the team
+            Object.entries(poules).forEach(([p,teams])=>{
+                if(p==='format'||!Array.isArray(teams))return;
+                teams.forEach((t,i)=>{
+                    if(t&&t.name===team&&key===p+'|'+i){
+                        data.forEach(pl=>{if(pl.name.trim())sel.innerHTML+=`<option>${pl.name}</option>`});
+                    }
+                });
+            });
+        });
+    },
+    add(type){
+        const team=document.getElementById('sc-team').value;
+        const player=document.getElementById('sc-player').value;
+        if(team==='-- Équipe --'||player==='-- Joueur --'){toast('Sélectionnez équipe et joueur !','error');return}
+        const k=type==='goal'?K.goals:K.assists;
+        const list=D.g(k)||[];
+        list.push({player,team,date:new Date().toISOString()});
+        D.s(k,list);
+        toast((type==='goal'?'⚽ But':'🎯 Passe')+' enregistré(e) !');
+        this.render();
+    },
+    render(){
+        const goals=D.g(K.goals)||[];
+        const assists=D.g(K.assists)||[];
+        const agg={};
+        goals.forEach(g=>{const k=g.player+'|'+g.team;if(!agg[k])agg[k]={player:g.player,team:g.team,goals:0,assists:0};agg[k].goals++});
+        assists.forEach(a=>{const k=a.player+'|'+a.team;if(!agg[k])agg[k]={player:a.player,team:a.team,goals:0,assists:0};agg[k].assists++});
+        const sorted=Object.values(agg).sort((a,b)=>(b.goals+b.assists)-(a.goals+a.assists));
+        const div=document.getElementById('top-ct');
+        if(!sorted.length){div.innerHTML='<p style="text-align:center;color:#666">Aucune action enregistrée</p>';return}
+        let h='<div class="tbl-c"><table><thead><tr><th>Pos</th><th>Joueur</th><th>Équipe</th><th>⚽</th><th>🎯</th></tr></thead><tbody>';
+        sorted.forEach((p,i)=>{
+            h+=`<tr><td style="font-weight:700">${i+1}</td><td style="font-weight:700">${p.player}</td><td>${p.team}</td><td><span style="background:#27ae60;color:#fff;padding:4px 10px;border-radius:6px;font-weight:700">${p.goals}</span></td><td><span style="background:#3498db;color:#fff;padding:4px 10px;border-radius:6px;font-weight:700">${p.assists}</span></td></tr>`;
+        });
+        h+='</tbody></table></div>';
+        div.innerHTML=h;
+    }
+};
+
+// ====== PILOTAGE ======
+const Pilot={
+    init(){
+        const div=document.getElementById('pay-ct');
+        const teams=getAllTeams();
+        const pays=D.g(K.pays)||{};
+        if(!teams.length){div.innerHTML='<p style="text-align:center;padding:40px;color:#999">Aucune équipe</p>';return}
+        let h='';
+        teams.forEach(t=>{
+            const pay=pays[t.name]||{a1:'',d1:'',a2:'',d2:'',rest:''};
+            h+=`<div style="background:#f8f9fa;padding:15px;margin-bottom:10px;border-radius:8px"><div style="font-weight:700;margin-bottom:10px">${t.name} <small style="color:#666">${t.loc}</small></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:12px"><div><label style="font-weight:600;display:block;margin-bottom:4px">1er Droit ($)</label><input type="number" value="${pay.a1}" onchange="Pilot.save('${t.name}','a1',this.value)" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px"></div><div><label style="font-weight:600;display:block;margin-bottom:4px">Date 1er</label><input type="date" value="${pay.d1}" onchange="Pilot.save('${t.name}','d1',this.value)" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px"></div><div><label style="font-weight:600;display:block;margin-bottom:4px">2ème Droit ($)</label><input type="number" value="${pay.a2}" onchange="Pilot.save('${t.name}','a2',this.value)" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px"></div><div><label style="font-weight:600;display:block;margin-bottom:4px">Date 2ème</label><input type="date" value="${pay.d2}" onchange="Pilot.save('${t.name}','d2',this.value)" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px"></div><div><label style="font-weight:600;display:block;margin-bottom:4px">Reste ($)</label><input type="number" value="${pay.rest}" onchange="Pilot.save('${t.name}','rest',this.value)" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px"></div></div></div>`;
+        });
+        div.innerHTML=h;
+    },
+    save(name,field,val){const pays=D.g(K.pays)||{};if(!pays[name])pays[name]={};pays[name][field]=val;D.s(K.pays,pays);toast('Enregistré !')}
+};
+
+// ====== GALERIE ======
+const Gal={
+    upload(input){
+        const files=input.files;const gal=D.g(K.gal)||[];
+        Array.from(files).forEach(f=>{
+            if(f.size>5*1024*1024){toast(f.name+' trop lourd (max 5MB)','error');return}
+            const reader=new FileReader();
+            reader.onload=e=>{gal.push({type:f.type.startsWith('video')?'vid':'img',data:e.target.result,name:f.name});D.s(K.gal,gal);this.render();toast(f.name+' ajouté !')};
+            reader.readAsDataURL(f);
+        });
+        input.value='';
+    },
+    render(){
+        const g=D.g(K.gal)||[];
+        const div=document.getElementById('gal-grid');
+        if(!g.length){div.innerHTML='<p style="grid-column:1/-1;text-align:center;color:#999;padding:40px">Galerie vide</p>';return}
+        div.innerHTML=g.map((item,i)=>`<div class="gal-item">${item.type==='vid'?`<video controls src="${item.data}"></video>`:`<img src="${item.data}" alt="${item.name}">`}<button class="gal-del" onclick="Gal.del(${i})"><i class="fas fa-times"></i></button></div>`).join('');
+    },
+    del(i){if(confirm('Supprimer ?')){const g=D.g(K.gal);g.splice(i,1);D.s(K.gal,g);this.render();toast('Supprimé')}}
+};
+
+// ====== DISPLAY (SYNCED) ======
+const Disp={
+    bg:'linear-gradient(135deg,#1a472a,#0d2614)',
+    init(){
+        // Auto-load from manual calendar
+        const manual=D.g(K.manual)||[];
+        const div=document.getElementById('disp-matches');
+        const syncNote=document.getElementById('disp-sync-note');
+
+        if(manual.length){
+            syncNote.innerHTML=`<div class="synced-note"><i class="fas fa-sync-alt"></i> <strong>${manual.length} match(s)</strong> synchronisés automatiquement depuis le Calendrier. Les noms, dates et heures sont pré-remplis.</div>`;
+            let h='';
+            // Group by date
+            const byDate={};
+            manual.forEach(m=>{if(!byDate[m.date])byDate[m.date]=[];byDate[m.date].push(m)});
+            Object.entries(byDate).forEach(([date,matches])=>{
+                const dateStr=new Date(date).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+                h+=`<div style="margin-bottom:20px"><h4 style="margin-bottom:10px;color:#1a472a"><i class="fas fa-calendar-day"></i> ${dateStr}</h4>`;
+                matches.forEach(m=>{
+                    h+=`<div style="background:#f8f9fa;padding:14px;border-radius:10px;margin-bottom:8px;display:flex;align-items:center;gap:15px;border-left:4px solid var(--neon)"><div style="font-size:24px;font-weight:900;color:#1a472a;font-family:'Orbitron',sans-serif;min-width:70px">${m.time}</div><div style="font-weight:700;font-size:15px">${m.t1} <span style="color:#e74c3c;margin:0 5px">VS</span> ${m.t2}</div></div>`;
+                });
+                h+=`</div>`;
+            });
+            div.innerHTML=h;
+        } else {
+            syncNote.innerHTML='';
+            div.innerHTML='<p style="text-align:center;color:#999;padding:20px">Planifiez des matchs dans le Calendrier — ils apparaîtront ici automatiquement</p>';
+        }
+    },
+    uploadBg(input){
+        const file=input.files[0];
+        if(file){const reader=new FileReader();reader.onload=e=>{this.bg=`url(${e.target.result})`;toast('Image chargée !')};reader.readAsDataURL(file)}
+    },
+    generate(){
+        const title=document.getElementById('disp-title').value||'TOURNOI';
+        const phase=document.getElementById('disp-phase').value;
+        const manual=D.g(K.manual)||[];
+        if(!manual.length){toast('Aucun match à afficher !','error');return}
+        // Group by date
+        const byDate={};
+        manual.forEach(m=>{if(!byDate[m.date])byDate[m.date]=[];byDate[m.date].push(m)});
+        // Take first date group for poster
+        const firstDate=Object.keys(byDate)[0];
+        const matches=byDate[firstDate]||[];
+        const dateStr=new Date(firstDate).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+        let h=`<div class="prev-bg" style="background:${this.bg}"><div class="prev-ov"></div><div class="prev-ct"><div style="font-size:40px;margin-bottom:10px">⚽</div><div class="prev-tt">${title.toUpperCase()}</div><div class="prev-ph">${phase}</div><div class="prev-date">${dateStr}</div><div style="margin-top:30px;display:flex;flex-direction:column;gap:15px">`;
+        matches.forEach(m=>{h+=`<div class="prev-m"><div class="prev-time">${m.time}</div><div class="prev-tms">${m.t1.toUpperCase()} <span class="prev-vs">VS</span> ${m.t2.toUpperCase()}</div></div>`});
+        h+=`</div><div style="margin-top:auto;padding-top:30px;font-size:12px;opacity:.7"><i class="fas fa-futbol"></i> Powered by Foot Apps Pro</div></div></div>`;
+
+        document.getElementById('final-prev').innerHTML=h;
+        document.getElementById('prev-sec').classList.remove('hidden');
+        document.getElementById('prev-sec').scrollIntoView({behavior:'smooth'});
+        toast('Affiche générée ! Capturez l\'écran pour partager 📱');
+    }
+};
+
+// ====== INIT ======
+window.onload=()=>Auth.check();
+</script>
+</body>
+</html>
