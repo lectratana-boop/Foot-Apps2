@@ -99,7 +99,8 @@
             position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
         .header-left { display: flex; align-items: center; gap: 15px; }
-        .back-btn { background: rgba(255,255,255,0.1); border: none; color: #fff; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 18px; }
+        .back-btn { background: rgba(255,255,255,0.1); border: none; color: #fff; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 18px; transition: all 0.2s; }
+        .back-btn:hover { background: rgba(255,255,255,0.2); }
         .header-title { color: #fff; font-family: 'Orbitron', sans-serif; font-size: 20px; }
         .user-badge { color: var(--neon-green); font-size: 12px; background: rgba(0,255,136,0.1); padding: 5px 12px; border-radius: 20px; border: 1px solid rgba(0,255,136,0.3); }
         
@@ -120,7 +121,7 @@
         .dash-icon { width: 60px; height: 60px; border-radius: 16px; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #fff; }
         
         /* PAGES */
-        .page { display: none; padding: 20px; max-width: 800px; margin: 0 auto; animation: slideIn 0.3s ease; padding-bottom: 100px; }
+        .page { display: none; padding: 20px; max-width: 1000px; margin: 0 auto; animation: slideIn 0.3s ease; padding-bottom: 100px; }
         .page.active { display: block; }
         
         .card {
@@ -150,23 +151,24 @@
         /* TABLES */
         .table-container { overflow-x: auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         table { width: 100%; border-collapse: collapse; min-width: 600px; }
-        th { background: #f8f9fa; padding: 12px; text-align: left; font-weight: 600; color: #555; font-size: 13px; white-space: nowrap; }
+        th { background: #f8f9fa; padding: 12px; text-align: left; font-weight: 600; color: #555; font-size: 13px; white-space: nowrap; position: sticky; top: 0; }
         td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
         tr:hover { background: #f8f9fa; }
         
         /* STATUS INPUTS */
-        .status-input { width: 100%; padding: 6px; text-align: center; border: 1px solid transparent; border-radius: 6px; font-weight: 700; font-size: 12px; }
+        .status-input { width: 100%; padding: 6px; text-align: center; border: 1px solid transparent; border-radius: 6px; font-weight: 700; font-size: 12px; text-transform: uppercase; }
         .status-p { background: #d4edda; color: #155724; }
         .status-ab { background: #f8d7da; color: #721c24; }
         .status-r { background: #e74c3c; color: #fff; }
         .status-j { background: #f1c40f; color: #000; }
         
         /* BUTTONS */
-        .btn { padding: 12px 24px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn { padding: 12px 24px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; justify-content: center; }
         .btn-primary { background: var(--neon-green); color: #000; }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(0,255,136,0.4); }
         .btn-secondary { background: #f0f2f5; color: #333; }
         .btn-danger { background: #e74c3c; color: #fff; }
+        .btn-info { background: #3498db; color: #fff; }
         
         /* TOGGLE SWITCH */
         .mode-toggle { display: flex; background: #f0f2f5; border-radius: 12px; padding: 5px; margin-bottom: 20px; }
@@ -192,6 +194,16 @@
         .preview-teams { font-size: 18px; font-weight: 700; flex: 1; }
         .preview-vs { color: var(--neon-green); font-weight: 900; font-size: 20px; }
         
+        /* MATCH CARD */
+        .match-card { background: #fff; border-radius: 16px; padding: 20px; margin-bottom: 15px; box-shadow: 0 3px 12px rgba(0,0,0,0.08); }
+        .match-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #f0f0f0; }
+        .match-teams { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .match-team { flex: 1; text-align: center; }
+        .match-team-name { font-weight: 700; font-size: 16px; margin-bottom: 5px; }
+        .match-vs { font-weight: 900; color: #e74c3c; font-size: 18px; }
+        .score-input { width: 60px; padding: 10px; text-align: center; font-size: 20px; font-weight: 700; border: 2px solid #e0e0e0; border-radius: 10px; }
+        .score-input:focus { outline: none; border-color: var(--neon-green); }
+        
         /* TOAST */
         #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: #333; color: #fff; padding: 15px 30px; border-radius: 50px; font-weight: 500; opacity: 0; transition: all 0.3s; z-index: 10000; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
         #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -204,9 +216,18 @@
             .auth-title { font-size: 24px; }
             .preview-time { font-size: 24px; }
             .preview-teams { font-size: 14px; }
+            table { font-size: 12px; }
+            th, td { padding: 8px 6px; }
         }
         
         .hidden { display: none !important; }
+        
+        /* Ranking table */
+        .ranking-table td:first-child { font-weight: 700; background: #f8f9fa; }
+        .ranking-table tr.qualified { background: #d4edda; }
+        
+        /* Calendar date input */
+        .calendar-date-row { background: #e8f5e9; padding: 15px; border-radius: 12px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -233,7 +254,7 @@
                 </div>
                 <div class="input-group">
                     <label><i class="fas fa-shield-alt"></i> Code d'activation</label>
-                    <input type="password" id="auth-code" placeholder="Code Admin" required>
+                    <input type="password" id="auth-code" placeholder="Code fourni par l'admin" required autocomplete="off">
                 </div>
                 
                 <button type="submit" class="btn-neon">
@@ -483,20 +504,35 @@
             <div class="card">
                 <div class="card-title"><i class="fas fa-calendar-week" style="color:#d299c2"></i> Calendrier des Matchs</div>
                 
+                <!-- DATE SELECTION -->
+                <div class="calendar-date-row">
+                    <label class="form-label" style="margin-bottom:10px;"><i class="fas fa-calendar-day"></i> Date du Tournoi</label>
+                    <input type="date" class="form-control" id="calendar-date" onchange="Calendar.saveDate()">
+                </div>
+                
                 <div class="mode-toggle">
-                    <button class="mode-btn active" onclick="Calendar.setMode('auto')" id="mode-auto">Mode Automatique</button>
-                    <button class="mode-btn" onclick="Calendar.setMode('manual')" id="mode-manual">Mode Manuel</button>
+                    <button class="mode-btn active" onclick="Calendar.setMode('auto')" id="mode-auto">
+                        <i class="fas fa-magic"></i> Mode Automatique
+                    </button>
+                    <button class="mode-btn" onclick="Calendar.setMode('manual')" id="mode-manual">
+                        <i class="fas fa-edit"></i> Mode Manuel
+                    </button>
                 </div>
                 
                 <div id="calendar-auto-section">
-                    <p style="margin-bottom:15px; color:#666;">Génération automatique selon la configuration (1 match par équipe par tour)</p>
+                    <p style="margin-bottom:15px; color:#666; background:#fff3cd; padding:12px; border-radius:8px; border-left:4px solid #ffc107;">
+                        <i class="fas fa-info-circle"></i> <strong>Mode Auto:</strong> Visualisez les rencontres générées automatiquement selon la configuration des poules
+                    </p>
                     <button class="btn btn-primary" onclick="Calendar.generateAuto()" style="width:100%; margin-bottom:20px;">
-                        <i class="fas fa-magic"></i> Générer le Calendrier Auto
+                        <i class="fas fa-sync-alt"></i> Générer Calendrier Automatique
                     </button>
                 </div>
                 
                 <div id="calendar-manual-section" class="hidden">
-                    <div style="display:flex; gap:10px; margin-bottom:15px;">
+                    <p style="margin-bottom:15px; color:#666; background:#d1ecf1; padding:12px; border-radius:8px; border-left:4px solid #17a2b8;">
+                        <i class="fas fa-info-circle"></i> <strong>Mode Manuel:</strong> Ajoutez vos matchs personnalisés avec date et heure
+                    </p>
+                    <div style="display:grid; grid-template-columns:1fr 1fr auto auto; gap:10px; margin-bottom:15px;">
                         <input type="text" class="form-control" id="manual-home" placeholder="Équipe Domicile">
                         <input type="text" class="form-control" id="manual-away" placeholder="Équipe Extérieur">
                         <input type="time" class="form-control" id="manual-time" style="width:120px;">
@@ -538,10 +574,10 @@
                 <div class="form-group">
                     <label class="form-label">Arrière-plan</label>
                     <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
-                        <button onclick="Display.setBg('linear-gradient(135deg, #1a472a, #0d2614)')" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg, #1a472a, #0d2614);border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,0.2)"></button>
-                        <button onclick="Display.setBg('linear-gradient(135deg, #8e44ad, #3498db)')" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg, #8e44ad, #3498db);border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,0.2)"></button>
-                        <button onclick="Display.setBg('linear-gradient(135deg, #e74c3c, #f39c12)')" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg, #e74c3c, #f39c12);border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,0.2)"></button>
-                        <button onclick="Display.setBg('linear-gradient(135deg, #2c3e50, #34495e)')" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg, #2c3e50, #34495e);border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,0.2)"></button>
+                        <button onclick="Display.setBg('linear-gradient(135deg, #1a472a, #0d2614)')" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg, #1a472a, #0d2614);border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,0.2);cursor:pointer;"></button>
+                        <button onclick="Display.setBg('linear-gradient(135deg, #8e44ad, #3498db)')" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg, #8e44ad, #3498db);border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,0.2);cursor:pointer;"></button>
+                        <button onclick="Display.setBg('linear-gradient(135deg, #e74c3c, #f39c12)')" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg, #e74c3c, #f39c12);border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,0.2);cursor:pointer;"></button>
+                        <button onclick="Display.setBg('linear-gradient(135deg, #2c3e50, #34495e)')" style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg, #2c3e50, #34495e);border:2px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,0.2);cursor:pointer;"></button>
                         <label style="cursor:pointer; display:flex; align-items:center; justify-content:center; width:40px;height:40px;border-radius:50%;background:#f0f0f0;border:2px dashed #999;">
                             <i class="fas fa-plus"></i>
                             <input type="file" accept="image/*" style="display:none;" onchange="Display.uploadBg(this)">
@@ -573,9 +609,9 @@
 
     <script>
         // ==========================================
-        // CONFIGURATION SECURISEE
+        // CONFIGURATION SECURISEE (MODIFIER ICI)
         // ==========================================
-        const SECURE_ADMIN_CODE = 'ADMIN2025'; // MODIFIEZ ICI VOTRE CODE ADMIN
+        const SECURE_ADMIN_CODE = 'FOOT2025'; // ⚠️ CHANGEZ CE CODE AVANT DEPLOIEMENT
         
         // ==========================================
         // BASE DE DONNEES (LocalStorage)
@@ -585,11 +621,11 @@
                 auth: 'fa_auth', config: 'fa_cfg', poules: 'fa_poul', 
                 players: 'fa_play', scores: 'fa_score', scorers: 'fa_scr', 
                 assists: 'fa_ass', payments: 'fa_pay', gallery: 'fa_gal', 
-                calendar: 'fa_cal', calendarMode: 'fa_cal_mode'
+                calendar: 'fa_cal', calendarMode: 'fa_cal_mode', calendarDate: 'fa_cal_date'
             },
             get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } },
             set(k, v) { localStorage.setItem(k, JSON.stringify(v)); },
-            init() { if(!this.get(this.keys.config)) this.set(this.keys.config, {}); }
+            init() { if(!this.get(this.keys.config)) this.set(this.keys.config, {elim:3, has16:false}); }
         };
         
         // ==========================================
@@ -621,17 +657,22 @@
             login() {
                 const code = document.getElementById('auth-code').value;
                 const name = document.getElementById('auth-name').value;
+                const phone = document.getElementById('auth-phone').value;
+                
                 if(code !== SECURE_ADMIN_CODE) {
                     Toast.show('Code d\'activation invalide !', 'error');
                     return;
                 }
-                DB.set(DB.keys.auth, { name: name, valid: true, time: new Date() });
+                
+                DB.set(DB.keys.auth, { name: name, phone: phone, valid: true, time: new Date() });
                 Toast.show('Bienvenue ' + name + ' !');
                 this.check();
             },
             logout() {
-                DB.set(DB.keys.auth, null);
-                location.reload();
+                if(confirm('Voulez-vous vraiment vous déconnecter ?')) {
+                    DB.set(DB.keys.auth, null);
+                    location.reload();
+                }
             }
         };
         
@@ -644,7 +685,13 @@
                 document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
                 document.getElementById('page-' + page).classList.add('active');
                 document.getElementById('back-btn').classList.toggle('hidden', page === 'dashboard');
-                document.getElementById('page-title').textContent = page.toUpperCase();
+                
+                const titles = {
+                    home: 'CONFIGURATION', poules: 'POULES', teams: 'BORDEREAUX',
+                    livescore: 'LIVE SCORE', stats: 'CLASSEMENTS', topscorers: 'TOP BUTEURS',
+                    pilotage: 'PILOTAGE', gallery: 'GALERIE', calendar: 'CALENDRIER', display: 'AFFICHAGE'
+                };
+                document.getElementById('page-title').textContent = titles[page] || 'DASHBOARD';
                 
                 // Load specific data
                 if(page === 'teams') Teams.init();
@@ -655,6 +702,10 @@
                 if(page === 'gallery') Gallery.render();
                 if(page === 'calendar') Calendar.init();
                 if(page === 'display') Display.init();
+                if(page === 'home') Home.load();
+                if(page === 'poules') Poules.load();
+                
+                this.current = page;
             },
             back() { this.go('dashboard'); }
         };
@@ -663,10 +714,16 @@
         // MODULE HOME (CONFIG)
         // ==========================================
         const Home = {
+            load() {
+                const cfg = DB.get(DB.keys.config) || {elim:3, has16:false};
+                document.getElementById('cfg-name').value = cfg.name || '';
+                document.querySelector(`input[name="elim"][value="${cfg.elim}"]`).checked = true;
+                document.querySelector(`input[name="has16"][value="${cfg.has16?'yes':'no'}"]`).checked = true;
+            },
             save() {
                 const cfg = {
                     name: document.getElementById('cfg-name').value,
-                    elim: document.querySelector('input[name="elim"]:checked').value,
+                    elim: parseInt(document.querySelector('input[name="elim"]:checked').value),
                     has16: document.querySelector('input[name="has16"]:checked').value === 'yes'
                 };
                 DB.set(DB.keys.config, cfg);
@@ -678,20 +735,41 @@
         // MODULE POULES
         // ==========================================
         const Poules = {
+            load() {
+                const saved = DB.get(DB.keys.poules);
+                if(saved && saved.format) {
+                    document.getElementById('poule-format').value = saved.format;
+                    this.render(saved.format);
+                }
+            },
             render(format) {
-                if(!format) return;
+                if(!format) {
+                    document.getElementById('poules-container').innerHTML = '';
+                    return;
+                }
+                
                 const container = document.getElementById('poules-container');
                 const poulesCount = parseInt(format);
                 const teamsPerPoule = poulesCount === 2 ? 8 : 4;
+                const saved = DB.get(DB.keys.poules) || {};
+                
                 let html = '';
                 
                 for(let i=0; i<poulesCount; i++) {
                     const letter = String.fromCharCode(65+i);
-                    html += `<div style="margin-bottom:20px;"><div style="background:#f5576c; color:#fff; padding:10px; border-radius:8px 8px 0 0; font-weight:700;">POULE ${letter}</div><div style="border:1px solid #eee; padding:15px; border-radius:0 0 8px 8px;">`;
-                    for(let j=1; j<=teamsPerPoule; j++) {
+                    const teams = saved[letter] || [];
+                    
+                    html += `<div style="margin-bottom:20px;">
+                        <div style="background:#f5576c; color:#fff; padding:10px; border-radius:8px 8px 0 0; font-weight:700;">
+                            POULE ${letter}
+                        </div>
+                        <div style="border:1px solid #eee; padding:15px; border-radius:0 0 8px 8px;">`;
+                    
+                    for(let j=0; j<teamsPerPoule; j++) {
+                        const team = teams[j] || {name:'', loc:''};
                         html += `<div style="display:flex; gap:10px; margin-bottom:10px;">
-                            <input type="text" class="form-control team-name" data-p="${letter}" data-i="${j}" placeholder="${j}. Nom équipe" style="flex:1;">
-                            <input type="text" class="form-control team-loc" data-p="${letter}" data-i="${j}" placeholder="Lieu" style="width:120px;">
+                            <input type="text" class="form-control team-name" data-p="${letter}" data-i="${j}" placeholder="${j+1}. Nom équipe" value="${team.name}" style="flex:1;">
+                            <input type="text" class="form-control team-loc" data-p="${letter}" data-i="${j}" placeholder="Lieu" value="${team.loc}" style="width:120px;">
                         </div>`;
                     }
                     html += `</div></div>`;
@@ -700,13 +778,19 @@
                 container.innerHTML = html;
             },
             save(count) {
-                const data = {};
+                const data = {format: count};
                 for(let i=0; i<count; i++) {
                     const letter = String.fromCharCode(65+i);
                     data[letter] = [];
                     document.querySelectorAll(`.team-name[data-p="${letter}"]`).forEach((inp, idx) => {
-                        const loc = document.querySelector(`.team-loc[data-p="${letter}"][data-i="${idx+1}"]`).value;
-                        if(inp.value) data[letter].push({name: inp.value, loc: loc, id: letter+(idx+1)});
+                        const loc = document.querySelector(`.team-loc[data-p="${letter}"][data-i="${idx}"]`).value;
+                        if(inp.value.trim()) {
+                            data[letter].push({
+                                name: inp.value.trim(), 
+                                loc: loc.trim(), 
+                                id: letter+(idx+1)
+                            });
+                        }
                     });
                 }
                 DB.set(DB.keys.poules, data);
@@ -715,94 +799,377 @@
         };
         
         // ==========================================
-        // MODULE TEAMS (BORDEREAUX)
+        // MODULE TEAMS (BORDEREAUX) - CORRIGÉ
         // ==========================================
         const Teams = {
             init() {
                 const sel = document.getElementById('team-select');
-                sel.innerHTML = '<option value="">-- Sélectionner --</option>';
+                sel.innerHTML = '<option value="">-- Sélectionner une équipe --</option>';
+                
                 const poules = DB.get(DB.keys.poules) || {};
+                let teamCount = 0;
+                
                 Object.entries(poules).forEach(([p, teams]) => {
-                    teams.forEach((t, i) => {
-                        if(t.name) sel.innerHTML += `<option value="${p}|${i}">${t.name} (${p})</option>`;
-                    });
+                    if(p === 'format') return;
+                    if(Array.isArray(teams)) {
+                        teams.forEach((t, i) => {
+                            if(t && t.name) {
+                                sel.innerHTML += `<option value="${p}|${i}">${t.name} (Poule ${p})</option>`;
+                                teamCount++;
+                            }
+                        });
+                    }
                 });
+                
+                if(teamCount === 0) {
+                    document.getElementById('bordereau-container').innerHTML = `
+                        <div style="text-align:center; padding:40px; color:#999;">
+                            <i class="fas fa-exclamation-circle" style="font-size:48px; margin-bottom:15px;"></i>
+                            <p>Aucune équipe disponible</p>
+                            <p style="font-size:13px;">Configurez d'abord les poules dans le menu "Poules"</p>
+                        </div>`;
+                }
             },
             loadBordereau(val) {
-                if(!val) return;
+                if(!val) {
+                    document.getElementById('bordereau-container').innerHTML = '';
+                    return;
+                }
+                
                 const [p, idx] = val.split('|');
-                const team = DB.get(DB.keys.poules)[p][parseInt(idx)];
+                const poules = DB.get(DB.keys.poules) || {};
+                const team = poules[p] ? poules[p][parseInt(idx)] : null;
+                
+                if(!team) {
+                    Toast.show('Équipe non trouvée', 'error');
+                    return;
+                }
+                
                 const cfg = DB.get(DB.keys.config) || {elim:3, has16:false};
                 const saved = (DB.get(DB.keys.players) || {})[val] || [];
                 
-                // Calculer colonnes
-                let cols = ['N°', 'Nom', 'N°M'];
-                for(let i=1; i<=parseInt(cfg.elim); i++) cols.push(`Elim${i}`);
+                // Calculer colonnes dynamiquement
+                let cols = ['N°', 'Nom & Prénom', 'N° Maillot'];
+                for(let i=1; i<=cfg.elim; i++) cols.push(`Élim ${i}`);
                 if(cfg.has16) cols.push('1/16');
-                cols.push('1/8', '1/4', '1/2', 'Fin');
+                cols.push('1/8', '1/4', '1/2', 'Finale');
                 
-                let html = `<div class="table-container"><table><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>`;
+                let html = `
+                    <div style="background:#4facfe; color:#fff; padding:15px; border-radius:12px; margin-bottom:15px;">
+                        <h3 style="margin:0; font-size:18px;">${team.name}</h3>
+                        <p style="margin:5px 0 0; opacity:0.9; font-size:13px;">📍 ${team.loc} | Poule ${p}</p>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr>
+                            </thead>
+                            <tbody>`;
                 
-                // 17 joueurs
+                // 17 joueurs (11 titulaires + 6 remplaçants)
                 for(let i=0; i<17; i++) {
-                    if(i===11) html += `<tr style="background:#eee; font-weight:bold;"><td colspan="${cols.length}">REMPLACANTS</td></tr>`;
+                    if(i===11) {
+                        html += `<tr style="background:#fff3cd; font-weight:bold;">
+                            <td colspan="${cols.length}" style="text-align:center; padding:12px;">
+                                <i class="fas fa-exchange-alt"></i> REMPLAÇANTS
+                            </td>
+                        </tr>`;
+                    }
+                    
                     const pl = saved[i] || {name:'', num:'', status:[]};
                     html += `<tr>
-                        <td>${i+1}</td>
-                        <td><input type="text" class="form-control" value="${pl.name}" id="pl-${i}-name" style="min-width:150px; font-size:13px;"></td>
-                        <td><input type="text" class="form-control" value="${pl.num}" id="pl-${i}-num" style="width:60px; text-align:center;"></td>`;
+                        <td style="font-weight:700; background:#f8f9fa;">${i+1}</td>
+                        <td><input type="text" class="form-control" value="${pl.name}" id="pl-${i}-name" style="min-width:150px; font-size:13px; padding:8px;"></td>
+                        <td><input type="text" class="form-control" value="${pl.num}" id="pl-${i}-num" style="width:60px; text-align:center; padding:8px;"></td>`;
                     
-                    // Matchs columns
+                    // Colonnes de matchs
                     for(let m=0; m<cols.length-3; m++) {
-                        const st = pl.status ? pl.status[m] : '';
+                        const st = pl.status && pl.status[m] ? pl.status[m].toUpperCase() : '';
                         let cls = '';
-                        if(st.toUpperCase()==='P') cls='status-p';
+                        if(st==='P') cls='status-p';
                         else if(st==='AB') cls='status-ab';
                         else if(st==='R') cls='status-r';
                         else if(st==='J') cls='status-j';
-                        html += `<td><input type="text" class="status-input ${cls}" value="${st}" id="pl-${i}-m${m}" onchange="Teams.color(this)" style="width:40px;"></td>`;
+                        
+                        html += `<td><input type="text" class="status-input ${cls}" value="${st}" id="pl-${i}-m${m}" onchange="Teams.color(this)" oninput="this.value=this.value.toUpperCase()" style="width:50px;" maxlength="2"></td>`;
                     }
                     html += `</tr>`;
                 }
+                
                 html += `</tbody></table></div>
-                <button class="btn btn-primary" onclick="Teams.save('${val}')" style="width:100%; margin-top:15px;"><i class="fas fa-save"></i> Sauvegarder Bordereau</button>`;
+                <div style="margin-top:20px; padding:15px; background:#f8f9fa; border-radius:12px;">
+                    <p style="font-size:13px; margin-bottom:10px;"><strong>Codes de statut:</strong></p>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap; font-size:12px;">
+                        <span class="status-input status-p" style="width:auto; padding:6px 12px;">P = Présent</span>
+                        <span class="status-input status-ab" style="width:auto; padding:6px 12px;">AB = Absent</span>
+                        <span class="status-input status-j" style="width:auto; padding:6px 12px;">J = Carton Jaune</span>
+                        <span class="status-input status-r" style="width:auto; padding:6px 12px;">R = Carton Rouge</span>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="Teams.save('${val}')" style="width:100%; margin-top:15px;">
+                    <i class="fas fa-save"></i> Sauvegarder le Bordereau
+                </button>`;
                 
                 document.getElementById('bordereau-container').innerHTML = html;
             },
             color(inp) {
-                inp.className = 'status-input ' + 
-                    (inp.value.toUpperCase()==='P'?'status-p':
-                     inp.value==='AB'?'status-ab':
-                     inp.value==='R'?'status-r':
-                     inp.value==='J'?'status-j':'');
+                const val = inp.value.toUpperCase();
+                inp.className = 'status-input';
+                if(val==='P') inp.classList.add('status-p');
+                else if(val==='AB') inp.classList.add('status-ab');
+                else if(val==='R') inp.classList.add('status-r');
+                else if(val==='J') inp.classList.add('status-j');
             },
             save(key) {
+                const cfg = DB.get(DB.keys.config) || {elim:3, has16:false};
+                let colCount = 3 + cfg.elim + (cfg.has16?1:0) + 4;
+                
                 const data = [];
                 for(let i=0; i<17; i++) {
                     const status = [];
-                    const cfg = DB.get(DB.keys.config) || {elim:3, has16:false};
-                    let colCount = 3 + parseInt(cfg.elim) + (cfg.has16?1:0) + 4;
-                    for(let m=0; m<colCount-3; m++) status.push(document.getElementById(`pl-${i}-m${m}`).value);
+                    for(let m=0; m<colCount-3; m++) {
+                        const input = document.getElementById(`pl-${i}-m${m}`);
+                        status.push(input ? input.value : '');
+                    }
                     data.push({
                         name: document.getElementById(`pl-${i}-name`).value,
                         num: document.getElementById(`pl-${i}-num`).value,
                         status: status
                     });
                 }
+                
                 const all = DB.get(DB.keys.players) || {};
                 all[key] = data;
                 DB.set(DB.keys.players, all);
-                Toast.show('Bordereau sauvegardé !');
+                Toast.show('Bordereau sauvegardé avec succès !');
             }
         };
         
         // ==========================================
-        // MODULE CALENDAR (AUTO/MANUEL)
+        // MODULE LIVE SCORE - CORRIGÉ
+        // ==========================================
+        const LiveScore = {
+            init() {
+                const calendar = DB.get(DB.keys.calendar) || [];
+                const scores = DB.get(DB.keys.scores) || {};
+                const div = document.getElementById('livescore-list');
+                
+                if(calendar.length === 0) {
+                    div.innerHTML = `
+                        <div style="text-align:center; padding:40px; color:#999;">
+                            <i class="fas fa-calendar-times" style="font-size:48px; margin-bottom:15px;"></i>
+                            <p>Aucun match programmé</p>
+                            <p style="font-size:13px;">Générez d'abord le calendrier dans le menu "Calendrier"</p>
+                        </div>`;
+                    return;
+                }
+                
+                let html = '';
+                calendar.forEach((match, idx) => {
+                    const score = scores[idx] || {s1: '', s2: ''};
+                    html += `
+                        <div class="match-card">
+                            <div class="match-header">
+                                <div>
+                                    <span style="background:#667eea; color:#fff; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:600;">
+                                        ${match.phase || 'Match'}
+                                    </span>
+                                    ${match.poule ? `<span style="margin-left:8px; color:#666; font-size:12px;">Poule ${match.poule}</span>` : ''}
+                                </div>
+                                <div style="color:#666; font-size:13px;">
+                                    <i class="fas fa-clock"></i> ${match.time || '--:--'}
+                                </div>
+                            </div>
+                            <div class="match-teams">
+                                <div class="match-team">
+                                    <div class="match-team-name">${match.t1}</div>
+                                    <input type="number" class="score-input" min="0" value="${score.s1}" onchange="LiveScore.saveScore(${idx}, 's1', this.value)">
+                                </div>
+                                <div class="match-vs">VS</div>
+                                <div class="match-team">
+                                    <div class="match-team-name">${match.t2}</div>
+                                    <input type="number" class="score-input" min="0" value="${score.s2}" onchange="LiveScore.saveScore(${idx}, 's2', this.value)">
+                                </div>
+                            </div>
+                        </div>`;
+                });
+                
+                div.innerHTML = html;
+            },
+            saveScore(idx, side, value) {
+                const scores = DB.get(DB.keys.scores) || {};
+                if(!scores[idx]) scores[idx] = {s1: '', s2: ''};
+                scores[idx][side] = value;
+                DB.set(DB.keys.scores, scores);
+                Toast.show('Score mis à jour !');
+                
+                // Recalculate stats
+                Stats.calculate();
+            }
+        };
+        
+        // ==========================================
+        // MODULE STATS - CORRIGÉ
+        // ==========================================
+        const Stats = {
+            init() {
+                this.calculate();
+                this.render();
+            },
+            calculate() {
+                // Cette fonction calcule les stats à partir des scores
+                const poules = DB.get(DB.keys.poules) || {};
+                const calendar = DB.get(DB.keys.calendar) || [];
+                const scores = DB.get(DB.keys.scores) || {};
+                
+                const standings = {};
+                
+                // Initialize teams
+                Object.entries(poules).forEach(([p, teams]) => {
+                    if(p === 'format' || !Array.isArray(teams)) return;
+                    if(!standings[p]) standings[p] = [];
+                    
+                    teams.forEach(team => {
+                        if(team && team.name) {
+                            standings[p].push({
+                                name: team.name,
+                                loc: team.loc,
+                                played: 0,
+                                won: 0,
+                                drawn: 0,
+                                lost: 0,
+                                gf: 0,
+                                ga: 0,
+                                gd: 0,
+                                pts: 0
+                            });
+                        }
+                    });
+                });
+                
+                // Calculate from matches
+                calendar.forEach((match, idx) => {
+                    const score = scores[idx];
+                    if(!score || score.s1 === '' || score.s2 === '') return;
+                    
+                    const s1 = parseInt(score.s1);
+                    const s2 = parseInt(score.s2);
+                    const poule = match.poule;
+                    
+                    if(!standings[poule]) return;
+                    
+                    const team1 = standings[poule].find(t => t.name === match.t1);
+                    const team2 = standings[poule].find(t => t.name === match.t2);
+                    
+                    if(team1) {
+                        team1.played++;
+                        team1.gf += s1;
+                        team1.ga += s2;
+                        team1.gd = team1.gf - team1.ga;
+                        if(s1 > s2) { team1.won++; team1.pts += 3; }
+                        else if(s1 === s2) { team1.drawn++; team1.pts += 1; }
+                        else { team1.lost++; }
+                    }
+                    
+                    if(team2) {
+                        team2.played++;
+                        team2.gf += s2;
+                        team2.ga += s1;
+                        team2.gd = team2.gf - team2.ga;
+                        if(s2 > s1) { team2.won++; team2.pts += 3; }
+                        else if(s2 === s1) { team2.drawn++; team2.pts += 1; }
+                        else { team2.lost++; }
+                    }
+                });
+                
+                // Sort each poule
+                Object.keys(standings).forEach(p => {
+                    standings[p].sort((a, b) => {
+                        if(b.pts !== a.pts) return b.pts - a.pts;
+                        if(b.gd !== a.gd) return b.gd - a.gd;
+                        return b.gf - a.gf;
+                    });
+                });
+                
+                DB.set('fa_standings', standings);
+            },
+            render() {
+                const standings = DB.get('fa_standings') || {};
+                const div = document.getElementById('stats-container');
+                
+                if(Object.keys(standings).length === 0) {
+                    div.innerHTML = `
+                        <div style="text-align:center; padding:40px; color:#999;">
+                            <i class="fas fa-chart-bar" style="font-size:48px; margin-bottom:15px;"></i>
+                            <p>Aucune statistique disponible</p>
+                            <p style="font-size:13px;">Saisissez des scores dans "Live Score" pour voir les classements</p>
+                        </div>`;
+                    return;
+                }
+                
+                let html = '';
+                Object.entries(standings).forEach(([poule, teams]) => {
+                    html += `
+                        <div style="margin-bottom:30px;">
+                            <h3 style="background:#667eea; color:#fff; padding:12px; border-radius:12px 12px 0 0; margin-bottom:0;">
+                                <i class="fas fa-trophy"></i> Classement Poule ${poule}
+                            </h3>
+                            <div class="table-container" style="border-radius:0 0 12px 12px;">
+                                <table class="ranking-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Pos</th>
+                                            <th>Équipe</th>
+                                            <th>J</th>
+                                            <th>G</th>
+                                            <th>N</th>
+                                            <th>P</th>
+                                            <th>BP</th>
+                                            <th>BC</th>
+                                            <th>Diff</th>
+                                            <th>Pts</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>`;
+                    
+                    teams.forEach((team, idx) => {
+                        const rowClass = idx < 2 ? ' qualified' : '';
+                        html += `
+                            <tr class="${rowClass}">
+                                <td style="font-weight:700;">${idx+1}</td>
+                                <td>
+                                    <div style="font-weight:700;">${team.name}</div>
+                                    <div style="font-size:11px; color:#666;">${team.loc}</div>
+                                </td>
+                                <td>${team.played}</td>
+                                <td>${team.won}</td>
+                                <td>${team.drawn}</td>
+                                <td>${team.lost}</td>
+                                <td>${team.gf}</td>
+                                <td>${team.ga}</td>
+                                <td style="font-weight:700; color:${team.gd>0?'#27ae60':team.gd<0?'#e74c3c':'#666'};">
+                                    ${team.gd>0?'+':''}${team.gd}
+                                </td>
+                                <td><strong style="font-size:16px; color:#667eea;">${team.pts}</strong></td>
+                            </tr>`;
+                    });
+                    
+                    html += `</tbody></table></div></div>`;
+                });
+                
+                div.innerHTML = html;
+            }
+        };
+        
+        // ==========================================
+        // MODULE CALENDAR - CORRIGÉ
         // ==========================================
         const Calendar = {
             mode: 'auto',
             init() {
                 this.mode = DB.get(DB.keys.calendarMode) || 'auto';
+                const savedDate = DB.get(DB.keys.calendarDate);
+                if(savedDate) document.getElementById('calendar-date').value = savedDate;
                 this.updateUI();
                 this.render();
             },
@@ -817,18 +1184,29 @@
                 document.getElementById('calendar-auto-section').classList.toggle('hidden', this.mode!=='auto');
                 document.getElementById('calendar-manual-section').classList.toggle('hidden', this.mode!=='manual');
             },
+            saveDate() {
+                const date = document.getElementById('calendar-date').value;
+                DB.set(DB.keys.calendarDate, date);
+                Toast.show('Date enregistrée !');
+            },
             generateAuto() {
                 const poules = DB.get(DB.keys.poules);
                 const cfg = DB.get(DB.keys.config);
-                if(!poules || !cfg) return Toast.show('Configurez d\'abord !', 'error');
+                if(!poules || !cfg) {
+                    Toast.show('Configurez d\'abord les poules !', 'error');
+                    return;
+                }
                 
                 const matches = [];
-                const elimCount = parseInt(cfg.elim);
                 
-                // Pour chaque poule, générer round robin et distribuer sur les tours
+                // Pour chaque poule, générer les matchs éliminatoires
                 Object.entries(poules).forEach(([pName, teams]) => {
-                    const validTeams = teams.filter(t => t.name);
-                    // Round robin simple
+                    if(pName === 'format' || !Array.isArray(teams)) return;
+                    
+                    const validTeams = teams.filter(t => t && t.name);
+                    if(validTeams.length < 2) return;
+                    
+                    // Round robin pour les éliminatoires
                     for(let i=0; i<validTeams.length; i++) {
                         for(let j=i+1; j<validTeams.length; j++) {
                             matches.push({
@@ -836,48 +1214,82 @@
                                 t2: validTeams[j].name,
                                 poule: pName,
                                 time: '',
-                                phase: 'Elim'
+                                phase: 'Éliminatoire'
                             });
                         }
                     }
                 });
                 
                 DB.set(DB.keys.calendar, matches);
-                Toast.show(matches.length + ' matchs générés !');
+                Toast.show(`${matches.length} matchs générés automatiquement !`);
                 this.render();
             },
             addManual() {
-                const t1 = document.getElementById('manual-home').value;
-                const t2 = document.getElementById('manual-away').value;
+                const t1 = document.getElementById('manual-home').value.trim();
+                const t2 = document.getElementById('manual-away').value.trim();
                 const time = document.getElementById('manual-time').value;
-                if(!t1 || !t2) return Toast.show('Remplissez les équipes !', 'error');
+                
+                if(!t1 || !t2) {
+                    Toast.show('Remplissez les deux équipes !', 'error');
+                    return;
+                }
                 
                 const matches = DB.get(DB.keys.calendar) || [];
                 matches.push({t1, t2, time, poule: '-', phase: 'Manuel'});
                 DB.set(DB.keys.calendar, matches);
+                
+                document.getElementById('manual-home').value = '';
+                document.getElementById('manual-away').value = '';
+                document.getElementById('manual-time').value = '';
+                
                 this.render();
-                Toast.show('Match ajouté');
+                Toast.show('Match ajouté !');
             },
             render() {
                 const matches = DB.get(DB.keys.calendar) || [];
                 const div = document.getElementById('calendar-display');
+                const date = DB.get(DB.keys.calendarDate);
+                
                 if(matches.length === 0) {
-                    div.innerHTML = '<p style="text-align:center; color:#999; padding:40px;">Aucun match programmé</p>';
+                    div.innerHTML = `
+                        <div style="text-align:center; padding:40px; color:#999;">
+                            <i class="fas fa-calendar-plus" style="font-size:48px; margin-bottom:15px;"></i>
+                            <p>Aucun match au calendrier</p>
+                            <p style="font-size:13px;">Utilisez le mode automatique ou ajoutez manuellement</p>
+                        </div>`;
                     return;
                 }
-                let html = '<div style="display:flex; flex-direction:column; gap:10px;">';
+                
+                let html = `
+                    <div style="background:#e8f5e9; padding:15px; border-radius:12px; margin-bottom:20px;">
+                        <h4 style="margin:0 0 10px 0; color:#1b5e20;">
+                            <i class="fas fa-calendar-check"></i> ${matches.length} Match${matches.length>1?'s':''} Programmé${matches.length>1?'s':''}
+                        </h4>
+                        ${date ? `<p style="margin:0; color:#2e7d32; font-size:14px;"><i class="fas fa-calendar-day"></i> Date: ${new Date(date).toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long', year:'numeric'})}</p>` : ''}
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:10px;">`;
+                
                 matches.forEach((m, i) => {
-                    html += `<div style="background:#fff; padding:15px; border-radius:12px; box-shadow:0 2px 5px rgba(0,0,0,0.05); display:flex; justify-content:space-between; align-items:center;">
-                        <div>
-                            <div style="font-weight:700; color:#333;">${m.t1} <span style="color:#e74c3c">VS</span> ${m.t2}</div>
-                            <div style="font-size:12px; color:#666;">${m.poule} • ${m.phase}</div>
-                        </div>
-                        <div style="display:flex; gap:10px; align-items:center;">
-                            <input type="time" value="${m.time}" onchange="Calendar.updateTime(${i}, this.value)" style="padding:5px; border:1px solid #ddd; border-radius:6px;">
-                            <button onclick="Calendar.delete(${i})" class="btn btn-danger" style="padding:5px 10px; font-size:12px;"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>`;
+                    html += `
+                        <div style="background:#fff; padding:15px; border-radius:12px; box-shadow:0 2px 5px rgba(0,0,0,0.05); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                            <div style="flex:1; min-width:200px;">
+                                <div style="font-weight:700; color:#333; margin-bottom:5px;">
+                                    ${m.t1} <span style="color:#e74c3c; margin:0 8px;">VS</span> ${m.t2}
+                                </div>
+                                <div style="font-size:12px; color:#666;">
+                                    <span style="background:#f0f2f5; padding:3px 8px; border-radius:6px; margin-right:8px;">${m.poule !== '-' ? 'Poule '+m.poule : 'Manuel'}</span>
+                                    <span>${m.phase}</span>
+                                </div>
+                            </div>
+                            <div style="display:flex; gap:10px; align-items:center;">
+                                <input type="time" value="${m.time}" onchange="Calendar.updateTime(${i}, this.value)" style="padding:8px; border:2px solid #e0e0e0; border-radius:8px; font-size:14px;">
+                                <button onclick="Calendar.delete(${i})" class="btn btn-danger" style="padding:8px 12px; font-size:12px;">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>`;
                 });
+                
                 html += '</div>';
                 div.innerHTML = html;
             },
@@ -885,13 +1297,16 @@
                 const m = DB.get(DB.keys.calendar);
                 m[idx].time = val;
                 DB.set(DB.keys.calendar, m);
+                Toast.show('Heure mise à jour');
             },
             delete(idx) {
-                const m = DB.get(DB.keys.calendar);
-                m.splice(idx, 1);
-                DB.set(DB.keys.calendar, m);
-                this.render();
-                Toast.show('Match supprimé');
+                if(confirm('Supprimer ce match du calendrier ?')) {
+                    const m = DB.get(DB.keys.calendar);
+                    m.splice(idx, 1);
+                    DB.set(DB.keys.calendar, m);
+                    this.render();
+                    Toast.show('Match supprimé');
+                }
             }
         };
         
@@ -904,20 +1319,29 @@
             init() {
                 this.matches = [{time:'', t1:'', t2:''}];
                 this.renderInputs();
-                // Set today date
                 document.getElementById('disp-date').valueAsDate = new Date();
+                document.getElementById('preview-section').classList.add('hidden');
             },
-            setBg(bg) { this.bg = bg; },
+            setBg(bg) { 
+                this.bg = bg; 
+                Toast.show('Arrière-plan sélectionné');
+            },
             uploadBg(input) {
                 const file = input.files[0];
                 if(file) {
                     const reader = new FileReader();
-                    reader.onload = e => { this.bg = `url(${e.target.result})`; Toast.show('Image chargée !'); };
+                    reader.onload = e => { 
+                        this.bg = `url(${e.target.result})`; 
+                        Toast.show('Image chargée !'); 
+                    };
                     reader.readAsDataURL(file);
                 }
             },
             addMatchInput() {
-                if(this.matches.length >= 10) return Toast.show('Maximum 10 matchs', 'error');
+                if(this.matches.length >= 10) {
+                    Toast.show('Maximum 10 matchs par jour', 'error');
+                    return;
+                }
                 this.matches.push({time:'', t1:'', t2:''});
                 this.renderInputs();
             },
@@ -926,10 +1350,10 @@
                 div.innerHTML = this.matches.map((m, i) => `
                     <div style="display:flex; gap:8px; margin-bottom:10px; align-items:center;">
                         <input type="time" class="form-control" style="width:100px;" value="${m.time}" onchange="Display.matches[${i}].time=this.value">
-                        <input type="text" class="form-control" placeholder="Dom" value="${m.t1}" onchange="Display.matches[${i}].t1=this.value">
+                        <input type="text" class="form-control" placeholder="Équipe Domicile" value="${m.t1}" onchange="Display.matches[${i}].t1=this.value">
                         <span style="font-weight:700; color:#666;">VS</span>
-                        <input type="text" class="form-control" placeholder="Ext" value="${m.t2}" onchange="Display.matches[${i}].t2=this.value">
-                        ${i>0 ? `<button onclick="Display.removeMatch(${i})" class="btn btn-danger" style="padding:5px 10px;"><i class="fas fa-times"></i></button>` : ''}
+                        <input type="text" class="form-control" placeholder="Équipe Extérieur" value="${m.t2}" onchange="Display.matches[${i}].t2=this.value">
+                        ${i>0 ? `<button onclick="Display.removeMatch(${i})" class="btn btn-danger" style="padding:8px 12px;"><i class="fas fa-times"></i></button>` : ''}
                     </div>
                 `).join('');
             },
@@ -941,9 +1365,14 @@
                 const title = document.getElementById('disp-title').value || 'TOURNOI';
                 const phase = document.getElementById('disp-phase').value;
                 const date = document.getElementById('disp-date').value;
-                const dateStr = date ? new Date(date).toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long'}) : '';
+                const dateStr = date ? new Date(date).toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long', year:'numeric'}) : '';
                 
                 const validMatches = this.matches.filter(m => m.t1 && m.t2);
+                
+                if(validMatches.length === 0) {
+                    Toast.show('Ajoutez au moins un match !', 'error');
+                    return;
+                }
                 
                 let html = `<div class="preview-bg" style="background: ${this.bg};">
                     <div class="preview-overlay"></div>
@@ -951,7 +1380,7 @@
                         <div style="font-size:40px; margin-bottom:10px;">⚽</div>
                         <div class="preview-title">${title.toUpperCase()}</div>
                         <div class="preview-phase">${phase}</div>
-                        <div class="preview-date">${dateStr}</div>
+                        ${dateStr ? `<div class="preview-date">${dateStr}</div>` : ''}
                         <div style="margin-top:30px; display:flex; flex-direction:column; gap:15px;">`;
                 
                 validMatches.forEach(m => {
@@ -961,92 +1390,226 @@
                     </div>`;
                 });
                 
-                html += `</div><div style="margin-top:auto; padding-top:30px; font-size:12px; opacity:0.7;">Powered by Foot Apps Pro</div></div></div>`;
+                html += `</div>
+                    <div style="margin-top:auto; padding-top:30px; font-size:12px; opacity:0.7;">
+                        <i class="fas fa-futbol"></i> Powered by Foot Apps Pro
+                    </div>
+                </div></div>`;
                 
                 document.getElementById('final-preview').innerHTML = html;
                 document.getElementById('preview-section').classList.remove('hidden');
-                Toast.show('Aperçu généré ! Faites une capture d\'écran.');
+                
+                // Scroll to preview
+                document.getElementById('preview-section').scrollIntoView({behavior:'smooth'});
+                
+                Toast.show('Affiche générée ! Faites une capture d\'écran pour partager.');
             }
         };
         
         // ==========================================
-        // MODULES SIMPLIFIÉS (Placeholder pour démo)
+        // MODULES SIMPLIFIÉS
         // ==========================================
-        const LiveScore = { init() { document.getElementById('livescore-list').innerHTML = '<p style="padding:20px; text-align:center; color:#666;">Module Live Score - Utilisez le Calendrier pour voir les matchs</p>'; } };
-        const Stats = { init() { document.getElementById('stats-container').innerHTML = '<p style="padding:20px; text-align:center; color:#666;">Statistiques disponibles après saisie des scores</p>'; } };
         const Scorers = { 
             init() { 
-                document.getElementById('scorers-list').innerHTML = '<p style="padding:20px; text-align:center;">Classement vide</p>';
+                const div = document.getElementById('scorers-list');
+                const scorers = DB.get(DB.keys.scorers) || [];
+                const assists = DB.get(DB.keys.assists) || [];
+                
+                if(scorers.length === 0 && assists.length === 0) {
+                    div.innerHTML = '<p style="padding:20px; text-align:center; color:#666;">Aucune action enregistrée</p>';
+                } else {
+                    let html = '<table><thead><tr><th>Pos</th><th>Joueur</th><th>Équipe</th><th>Buts</th><th>Passes</th></tr></thead><tbody>';
+                    
+                    // Agregate data (simplified)
+                    const players = {};
+                    scorers.forEach(s => {
+                        const key = s.player + '|' + s.team;
+                        if(!players[key]) players[key] = {player:s.player, team:s.team, goals:0, assists:0};
+                        players[key].goals++;
+                    });
+                    assists.forEach(a => {
+                        const key = a.player + '|' + a.team;
+                        if(!players[key]) players[key] = {player:a.player, team:a.team, goals:0, assists:0};
+                        players[key].assists++;
+                    });
+                    
+                    const sorted = Object.values(players).sort((a,b) => (b.goals+b.assists) - (a.goals+a.assists));
+                    
+                    sorted.forEach((p, i) => {
+                        html += `<tr>
+                            <td style="font-weight:700;">${i+1}</td>
+                            <td style="font-weight:700;">${p.player}</td>
+                            <td>${p.team}</td>
+                            <td><span style="background:#27ae60; color:#fff; padding:4px 10px; border-radius:6px; font-weight:700;">${p.goals}</span></td>
+                            <td><span style="background:#3498db; color:#fff; padding:4px 10px; border-radius:6px; font-weight:700;">${p.assists}</span></td>
+                        </tr>`;
+                    });
+                    
+                    html += '</tbody></table>';
+                    div.innerHTML = html;
+                }
+                
                 // Populate team select
                 const sel = document.getElementById('scorer-team');
                 sel.innerHTML = '<option>-- Équipe --</option>';
                 const poules = DB.get(DB.keys.poules) || {};
-                Object.values(poules).flat().forEach(t => { if(t.name) sel.innerHTML += `<option>${t.name}</option>`; });
+                Object.values(poules).forEach(teams => {
+                    if(Array.isArray(teams)) {
+                        teams.forEach(t => { 
+                            if(t && t.name) sel.innerHTML += `<option>${t.name}</option>`; 
+                        });
+                    }
+                });
             },
             loadPlayers(team) {
                 const sel = document.getElementById('scorer-player');
                 sel.innerHTML = '<option>-- Joueur --</option>';
-                // Simulated players
-                for(let i=1; i<=5; i++) sel.innerHTML += `<option>Joueur ${i} ${team}</option>`;
+                
+                // Find team key in bordereaux
+                const players = DB.get(DB.keys.players) || {};
+                Object.entries(players).forEach(([key, data]) => {
+                    if(key.includes(team)) {
+                        data.forEach(p => {
+                            if(p.name.trim()) {
+                                sel.innerHTML += `<option>${p.name} (${p.num})</option>`;
+                            }
+                        });
+                    }
+                });
             },
             add(type) {
+                const team = document.getElementById('scorer-team').value;
+                const player = document.getElementById('scorer-player').value;
+                
+                if(team === '-- Équipe --' || player === '-- Joueur --') {
+                    Toast.show('Sélectionnez équipe et joueur !', 'error');
+                    return;
+                }
+                
+                const key = type === 'goal' ? DB.keys.scorers : DB.keys.assists;
+                const list = DB.get(key) || [];
+                list.push({player, team, date: new Date().toISOString()});
+                DB.set(key, list);
+                
                 Toast.show((type==='goal'?'But':'Passe') + ' enregistré(e) !');
+                this.init();
             }
         };
+        
         const Pilotage = { 
             init() { 
                 const div = document.getElementById('payments-list');
                 const poules = DB.get(DB.keys.poules) || {};
+                const payments = DB.get(DB.keys.payments) || {};
+                
                 let html = '';
-                Object.values(poules).flat().forEach(t => {
-                    if(t.name) html += `<div style="background:#f8f9fa; padding:15px; margin-bottom:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-weight:600;">${t.name}</span>
-                        <div style="display:flex; gap:10px;">
-                            <input type="number" placeholder="Montant" style="width:100px; padding:5px; border:1px solid #ddd; border-radius:6px;">
-                            <select style="padding:5px; border-radius:6px;"><option>Non payé</option><option>Payé</option></select>
-                        </div>
-                    </div>`;
+                let totalTeams = 0;
+                
+                Object.values(poules).forEach(teams => {
+                    if(Array.isArray(teams)) {
+                        teams.forEach(t => {
+                            if(t && t.name) {
+                                totalTeams++;
+                                const pay = payments[t.name] || {amount:0, paid:false};
+                                html += `
+                                    <div style="background:#f8f9fa; padding:15px; margin-bottom:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                                        <div>
+                                            <div style="font-weight:700; margin-bottom:5px;">${t.name}</div>
+                                            <div style="font-size:12px; color:#666;">${t.loc}</div>
+                                        </div>
+                                        <div style="display:flex; gap:10px; align-items:center;">
+                                            <input type="number" placeholder="Montant ($)" value="${pay.amount||''}" 
+                                                onchange="Pilotage.save('${t.name}', 'amount', this.value)" 
+                                                style="width:100px; padding:8px; border:2px solid #e0e0e0; border-radius:8px;">
+                                            <select onchange="Pilotage.save('${t.name}', 'paid', this.value==='true')" 
+                                                style="padding:8px; border:2px solid #e0e0e0; border-radius:8px;">
+                                                <option value="false" ${!pay.paid?'selected':''}>Non payé</option>
+                                                <option value="true" ${pay.paid?'selected':''}>Payé ✓</option>
+                                            </select>
+                                        </div>
+                                    </div>`;
+                            }
+                        });
+                    }
                 });
-                div.innerHTML = html || '<p style="text-align:center;">Aucune équipe</p>';
+                
+                if(totalTeams === 0) {
+                    html = '<p style="text-align:center; color:#666; padding:40px;">Aucune équipe configurée</p>';
+                }
+                
+                div.innerHTML = html;
+            },
+            save(team, field, value) {
+                const payments = DB.get(DB.keys.payments) || {};
+                if(!payments[team]) payments[team] = {amount:0, paid:false};
+                payments[team][field] = field === 'amount' ? parseFloat(value) : value;
+                DB.set(DB.keys.payments, payments);
+                Toast.show('Enregistré !');
             }
         };
+        
         const Gallery = {
             upload(input) {
                 const files = input.files;
                 const gallery = DB.get(DB.keys.gallery) || [];
+                
                 Array.from(files).forEach(f => {
+                    if(f.size > 5*1024*1024) {
+                        Toast.show(`${f.name} trop volumineux (max 5MB)`, 'error');
+                        return;
+                    }
+                    
                     const reader = new FileReader();
                     reader.onload = e => {
-                        gallery.push({type: f.type.startsWith('video')?'vid':'img', data: e.target.result, name: f.name});
+                        gallery.push({
+                            type: f.type.startsWith('video')?'vid':'img', 
+                            data: e.target.result, 
+                            name: f.name
+                        });
                         DB.set(DB.keys.gallery, gallery);
                         this.render();
                         Toast.show(f.name + ' ajouté !');
                     };
                     reader.readAsDataURL(f);
                 });
+                
+                input.value = '';
             },
             render() {
                 const g = DB.get(DB.keys.gallery) || [];
                 const div = document.getElementById('gallery-grid');
+                
+                if(g.length === 0) {
+                    div.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#999; padding:40px;">Galerie vide</p>';
+                    return;
+                }
+                
                 div.innerHTML = g.map((item, i) => `
                     <div class="gallery-item">
                         ${item.type==='vid' 
                             ? `<video controls src="${item.data}" style="width:100%; height:100%; object-fit:cover;"></video>` 
-                            : `<img src="${item.data}" style="width:100%; height:100%; object-fit:cover;">`}
-                        <button class="gallery-delete" onclick="Gallery.delete(${i})"><i class="fas fa-times"></i></button>
+                            : `<img src="${item.data}" style="width:100%; height:100%; object-fit:cover;" alt="${item.name}">`}
+                        <button class="gallery-delete" onclick="Gallery.delete(${i})">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
                 `).join('');
-                if(g.length===0) div.innerHTML = '<p style="grid-column:1/-1; text-align:center; color:#999;">Galerie vide</p>';
             },
             delete(i) {
-                const g = DB.get(DB.keys.gallery);
-                g.splice(i, 1);
-                DB.set(DB.keys.gallery, g);
-                this.render();
+                if(confirm('Supprimer ce fichier ?')) {
+                    const g = DB.get(DB.keys.gallery);
+                    g.splice(i, 1);
+                    DB.set(DB.keys.gallery, g);
+                    this.render();
+                    Toast.show('Supprimé');
+                }
             }
         };
         
-        // Initialisation au chargement
+        // ==========================================
+        // INITIALISATION
+        // ==========================================
+        DB.init();
         window.onload = () => Auth.check();
     </script>
 </body>
