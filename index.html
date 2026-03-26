@@ -338,20 +338,11 @@
         <div class="card">
             <div class="card-t"><i class="fas fa-calendar-week" style="color:#d299c2"></i> Calendrier des Matchs</div>
             <div class="mtg">
-                <button class="mtg-b active" id="m-auto" onclick="Cal.mode('auto')"><i class="fas fa-magic"></i> Référence Auto</button>
                 <button class="mtg-b" id="m-manual" onclick="Cal.mode('manual')"><i class="fas fa-edit"></i> Planification</button>
             </div>
 
             <!-- AUTO -->
-            <div id="cal-auto">
-                <div style="background:#fff3cd;padding:15px;border-radius:12px;border-left:4px solid #ffc107;margin-bottom:20px;font-size:14px">
-                    <i class="fas fa-info-circle"></i> <strong>Mode Référence:</strong> Liste de toutes les rencontres à programmer. Cliquez <strong>OK</strong> pour marquer un match comme planifié.
-                </div>
-                <button class="btn btn-p" onclick="Cal.genAuto()" style="width:100%;margin-bottom:20px"><i class="fas fa-sync-alt"></i> Générer la Référence Automatique</button>
-                <div id="cal-auto-list"></div>
-            </div>
-
-            <!-- MANUAL -->
+                      <!-- MANUAL -->
             <div id="cal-manual" class="hidden">
                 <div style="background:#d1ecf1;padding:15px;border-radius:12px;border-left:4px solid #17a2b8;margin-bottom:20px;font-size:14px">
                     <i class="fas fa-info-circle"></i> <strong>Planification:</strong> Sélectionnez les équipes, la date et l'heure. Les matchs planifiés ici sont synchronisés automatiquement vers l'Affichage Facebook.
@@ -424,7 +415,7 @@
 const ADMIN_CODE='ADMIN26';
 
 // ====== DB ======
-const K={auth:'fa2_auth',cfg:'fa2_cfg',poules:'fa2_poul',players:'fa2_play',scores:'fa2_scores',goals:'fa2_goals',assists:'fa2_assists',pays:'fa2_pays',gal:'fa2_gal',autoRef:'fa2_autoRef',manual:'fa2_manual'};
+const K={auth:'fa2_auth',cfg:'fa2_cfg',poules:'fa2_poul',players:'fa2_play',scores:'fa2_scores',goals:'fa2_goals',assists:'fa2_assists',pays:'fa2_pays',gal:'fa2_gal',manual:'fa2_manual'};
 const D={
     g(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},
     s(k,v){localStorage.setItem(k,JSON.stringify(v))}
@@ -597,8 +588,6 @@ const Cal={
     },
     mode(m){this.curMode=m;this.updateUI()},
     updateUI(){
-        document.getElementById('m-auto').classList.toggle('active',this.curMode==='auto');
-        document.getElementById('m-manual').classList.toggle('active',this.curMode==='manual');
         document.getElementById('cal-auto').classList.toggle('hidden',this.curMode!=='auto');
         document.getElementById('cal-manual').classList.toggle('hidden',this.curMode!=='manual');
     },
@@ -609,67 +598,6 @@ const Cal={
             sel.innerHTML='<option value="">-- Choisir --</option>';
             teams.forEach(t=>sel.innerHTML+=`<option value="${t.name}">${t.name} (${t.poule})</option>`);
         });
-    },
-    genAuto(){
-        const poules=D.g(K.poules);const cfg=D.g(K.cfg);
-        if(!poules||!cfg){toast('Configurez d\'abord les poules !','error');return}
-        const matches=[];let id=0;
-        Object.entries(poules).forEach(([pn,teams])=>{
-            if(pn==='format'||!Array.isArray(teams))return;
-            const valid=teams.filter(t=>t&&t.name);
-            if(valid.length<2)return;
-            for(let e=0;e<cfg.elim;e++){
-                for(let i=0;i<valid.length;i++){
-                    for(let j=i+1;j<valid.length;j++){
-                        // Only add once per unique pair per elim round
-                        const matchId=`${pn}_E${e+1}_${valid[i].name}_${valid[j].name}`;
-                        if(!matches.find(m=>m.id===matchId)){
-                            matches.push({
-                                id:matchId,
-                                t1:valid[i].name,
-                                t2:valid[j].name,
-                                poule:pn,
-                                round:e+1,
-                                phase:`Élim. ${e+1}`,
-                                ok:false
-                            });
-                        }
-                    }
-                }
-            }
-        });
-        D.s(K.autoRef,matches);
-        toast(`${matches.length} rencontres générées !`);
-        this.renderAuto();
-    },
-    renderAuto(){
-        const matches=D.g(K.autoRef)||[];
-        const div=document.getElementById('cal-auto-list');
-        if(!matches.length){div.innerHTML='<p style="text-align:center;padding:40px;color:#999"><i class="fas fa-calendar-plus" style="font-size:48px;display:block;margin-bottom:15px"></i>Cliquez sur "Générer" pour créer la référence</p>';return}
-        const pending=matches.filter(m=>!m.ok);
-        const done=matches.filter(m=>m.ok);
-        let h=`<div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap"><span style="background:#fff3cd;padding:8px 16px;border-radius:8px;font-weight:600;font-size:13px">⏳ À programmer: ${pending.length}</span><span style="background:#d4edda;padding:8px 16px;border-radius:8px;font-weight:600;font-size:13px">✅ Planifiés: ${done.length}</span><span style="background:#e3f2fd;padding:8px 16px;border-radius:8px;font-weight:600;font-size:13px">📊 Total: ${matches.length}</span></div>`;
-        if(pending.length){
-            h+='<h4 style="margin-bottom:12px;color:#e67e22"><i class="fas fa-clock"></i> Matchs à programmer</h4>';
-            pending.forEach((m,i)=>{
-                const realIdx=matches.indexOf(m);
-                h+=`<div class="cm-row"><div class="cm-info"><div class="cm-teams">${m.t1} <span style="color:#e74c3c;margin:0 8px">VS</span> ${m.t2}</div><div class="cm-meta"><span style="background:#e3f2fd;padding:3px 8px;border-radius:6px;margin-right:8px">Poule ${m.poule}</span>${m.phase}</div></div><div class="cm-actions"><button class="btn btn-ok" onclick="Cal.markOk(${realIdx})"><i class="fas fa-check"></i> OK</button></div></div>`;
-            });
-        }
-        if(done.length){
-            h+='<h4 style="margin:25px 0 12px;color:#27ae60"><i class="fas fa-check-circle"></i> Déjà planifiés</h4>';
-            done.forEach(m=>{
-                h+=`<div class="cm-row transferred"><div class="cm-info"><div class="cm-teams">${m.t1} VS ${m.t2}</div><div class="cm-meta"><span style="background:#d4edda;padding:3px 8px;border-radius:6px;margin-right:8px">Poule ${m.poule}</span>${m.phase} <span class="sync-badge"><i class="fas fa-check"></i> Transféré</span></div></div></div>`;
-            });
-        }
-        div.innerHTML=h;
-    },
-    markOk(idx){
-        const m=D.g(K.autoRef);
-        m[idx].ok=true;
-        D.s(K.autoRef,m);
-        toast('Match marqué comme planifié ✅');
-        this.renderAuto();
     },
     addManual(){
         const t1=document.getElementById('man-t1').value;
@@ -683,17 +611,12 @@ const Cal={
         const manual=D.g(K.manual)||[];
         manual.push({t1,t2,date,time,id:Date.now()});
         D.s(K.manual,manual);
-        // Mark corresponding auto-ref as OK
-        const autoRef=D.g(K.autoRef)||[];
-        const found=autoRef.find(m=>((m.t1===t1&&m.t2===t2)||(m.t1===t2&&m.t2===t1))&&!m.ok);
-        if(found){found.ok=true;D.s(K.autoRef,autoRef)}
         document.getElementById('man-t1').value='';
         document.getElementById('man-t2').value='';
         document.getElementById('man-date').value='';
         document.getElementById('man-time').value='';
         toast('Match planifié et synchronisé ! 📅');
-        this.renderManual();this.renderAuto();
-    },
+        this.renderManual();
     renderManual(){
         const manual=D.g(K.manual)||[];
         const div=document.getElementById('cal-man-list');
@@ -711,10 +634,6 @@ const Cal={
         const removed=manual[idx];
         manual.splice(idx,1);
         D.s(K.manual,manual);
-        // Reset auto ref status
-        const autoRef=D.g(K.autoRef)||[];
-        const found=autoRef.find(m=>((m.t1===removed.t1&&m.t2===removed.t2)||(m.t1===removed.t2&&m.t2===removed.t1))&&m.ok);
-        if(found){found.ok=false;D.s(K.autoRef,autoRef)}
         toast('Match supprimé — remis en "à programmer"');
         this.renderManual();this.renderAuto();
     }
